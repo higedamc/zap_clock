@@ -21,26 +21,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPage(
       icon: Icons.alarm,
       iconColor: AppTheme.primaryColor,
-      title: 'ZapClockへようこそ',
-      description: 'Lightning Networkを使った\n革新的なアラームアプリです',
+      title: 'ZapClock へようこそ',
+      description: 'Nostr Wallet Connect (NWC) を使った\n革新的なアラームアプリです',
     ),
     _OnboardingPage(
       icon: Icons.flash_on,
       iconColor: AppTheme.accentColor,
       title: '自動送金アラーム',
-      description: 'アラームを止めないと\n自動的にLightning送金されます\n\n起きられないあなたへ最適！',
+      description: 'アラームを止めないと\n自動的に開発者に zap されます\n\n起きられないあなたへ最適！',
     ),
     _OnboardingPage(
       icon: Icons.settings,
       iconColor: Colors.orange,
       title: '簡単設定',
-      description: '1. NWC接続を設定\n2. アラーム時刻を設定\n3. 送金額とタイムアウトを設定\n\nこれだけでOK！',
+      description: '1. NWC 接続を設定\n2. アラーム時刻を設定\n3. 送金額とタイムアウトを設定\n\nこれだけでOK！',
     ),
     _OnboardingPage(
       icon: Icons.done_all,
       iconColor: Colors.green,
       title: '準備完了',
-      description: 'さあ、ZapClockで\n規則正しい生活を始めましょう！',
+      description: 'さあ、ZapClock で\n規則正しい生活を始めましょう！',
     ),
   ];
 
