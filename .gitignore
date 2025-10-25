@@ -47,3 +47,4 @@ app.*.map.json
 # Rust related
 rust/target/
 **/*.rs.bk
+pubspec.lock
