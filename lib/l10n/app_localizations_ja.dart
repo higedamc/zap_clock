@@ -219,7 +219,16 @@ class AppLocalizationsJa extends AppLocalizations {
       '対応ウォレット：\n• Alby（推奨）\n• Mutiny\n• その他NWC対応ウォレット';
 
   @override
-  String get recipientAddress => '送金先: godzhigella@minibits.cash（固定）';
+  String get donationRecipient => '送金先';
+
+  @override
+  String get donationRecipientDescription => 'アラームがタイムアウトした際の送金先を選択してください';
+
+  @override
+  String get selectRecipient => '送金先を選択';
+
+  @override
+  String get recipientSaved => '送金先を保存しました';
 
   @override
   String get nwcSaved => 'NWC設定を保存しました';
@@ -248,7 +257,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingDescription2 =>
-      'アラームを止めないと\n自動的に開発者に zap されます\n\n起きられないあなたへ最適！';
+      'アラームを止めないと\n選択した送金先に自動的に zap されます\n\n起きられないあなたへ最適！';
 
   @override
   String get onboardingTitle3 => '簡単設定';

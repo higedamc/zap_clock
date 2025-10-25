@@ -356,9 +356,24 @@
     "description": "Supported wallets list"
   },
   
-  "recipientAddress": "Recipient: godzhigella@minibits.cash (fixed)",
-  "@recipientAddress": {
-    "description": "Payment recipient address"
+  "donationRecipient": "Donation Recipient",
+  "@donationRecipient": {
+    "description": "Donation recipient section title"
+  },
+  
+  "donationRecipientDescription": "Choose where to send donations when alarm times out",
+  "@donationRecipientDescription": {
+    "description": "Donation recipient section description"
+  },
+  
+  "selectRecipient": "Select Recipient",
+  "@selectRecipient": {
+    "description": "Button to select donation recipient"
+  },
+  
+  "recipientSaved": "Donation recipient saved",
+  "@recipientSaved": {
+    "description": "Success message when recipient is saved"
   },
   
   "nwcSaved": "NWC settings saved",
@@ -401,7 +416,7 @@
     "description": "Onboarding page 2 title"
   },
   
-  "onboardingDescription2": "If you don't stop the alarm,\nit will automatically zap the developer\n\nPerfect for those who can't wake up!",
+  "onboardingDescription2": "If you don't stop the alarm,\nit will automatically zap your chosen recipient\n\nPerfect for those who can't wake up!",
   "@onboardingDescription2": {
     "description": "Onboarding page 2 description"
   },

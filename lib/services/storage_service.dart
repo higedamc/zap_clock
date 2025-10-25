@@ -9,6 +9,7 @@ class StorageService {
   static const String _nextIdKey = 'next_alarm_id';
   static const String _globalNwcConnectionKey = 'global_nwc_connection';
   static const String _hasCompletedOnboardingKey = 'has_completed_onboarding';
+  static const String _donationRecipientKey = 'donation_recipient_address';
   
   final SharedPreferences _prefs;
   
@@ -106,6 +107,19 @@ class StorageService {
   /// オンボーディング完了フラグを設定
   Future<bool> setOnboardingCompleted() async {
     return await _prefs.setBool(_hasCompletedOnboardingKey, true);
+  }
+  
+  // === 送金先設定 ===
+  
+  /// 送金先Lightning Addressを取得
+  /// nullの場合はデフォルト（Human Rights Foundation）を使用
+  String? getDonationRecipient() {
+    return _prefs.getString(_donationRecipientKey);
+  }
+  
+  /// 送金先Lightning Addressを保存
+  Future<bool> setDonationRecipient(String lightningAddress) async {
+    return await _prefs.setString(_donationRecipientKey, lightningAddress);
   }
 }
 

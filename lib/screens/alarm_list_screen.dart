@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/alarm_provider.dart';
+import '../providers/storage_provider.dart';
 import '../models/alarm.dart';
+import '../models/donation_recipient.dart';
 import '../app_theme.dart';
 
 /// アラーム一覧画面
@@ -204,26 +206,36 @@ class _AlarmListItem extends StatelessWidget {
                     if (alarm.amountSats != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            // 送金先アドレスを取得
+                            final storage = ref.read(storageServiceProvider);
+                            final recipientAddress = storage.getDonationRecipient() ?? 
+                                                    DonationRecipients.defaultRecipient.lightningAddress;
+                            
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
-                                  Icons.flash_on,
-                                  size: 16,
-                                  color: AppTheme.accentColor,
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.flash_on,
+                                      size: 16,
+                                      color: AppTheme.accentColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        '${alarm.amountSats} sats → $recipientAddress',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: AppTheme.accentColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${alarm.amountSats} sats → godzhigella@minibits.cash',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppTheme.accentColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
                             const SizedBox(height: 2),
                             Row(
                               children: [
@@ -242,7 +254,9 @@ class _AlarmListItem extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          ],
+                              ],
+                            );
+                          },
                         ),
                       ),
                   ],

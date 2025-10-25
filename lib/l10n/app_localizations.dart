@@ -488,11 +488,29 @@ abstract class AppLocalizations {
   /// **'Supported wallets:\n• Alby (recommended)\n• Mutiny\n• Other NWC-compatible wallets'**
   String get supportedWallets;
 
-  /// Payment recipient address
+  /// Donation recipient section title
   ///
   /// In en, this message translates to:
-  /// **'Recipient: godzhigella@minibits.cash (fixed)'**
-  String get recipientAddress;
+  /// **'Donation Recipient'**
+  String get donationRecipient;
+
+  /// Donation recipient section description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where to send donations when alarm times out'**
+  String get donationRecipientDescription;
+
+  /// Button to select donation recipient
+  ///
+  /// In en, this message translates to:
+  /// **'Select Recipient'**
+  String get selectRecipient;
+
+  /// Success message when recipient is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Donation recipient saved'**
+  String get recipientSaved;
 
   /// Success message when NWC settings are saved
   ///
@@ -545,7 +563,7 @@ abstract class AppLocalizations {
   /// Onboarding page 2 description
   ///
   /// In en, this message translates to:
-  /// **'If you don\'t stop the alarm,\nit will automatically zap the developer\n\nPerfect for those who can\'t wake up!'**
+  /// **'If you don\'t stop the alarm,\nit will automatically zap your chosen recipient\n\nPerfect for those who can\'t wake up!'**
   String get onboardingDescription2;
 
   /// Onboarding page 3 title

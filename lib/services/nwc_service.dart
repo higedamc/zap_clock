@@ -31,21 +31,19 @@ class NwcService {
     }
   }
   
-  /// Lightning Invoiceを支払う（固定アドレスに送金）
+  /// Lightning Invoiceを支払う（設定された送金先に送金）
   Future<String> payWithNwc({
     required String connectionString,
+    required String lightningAddress,
     required int amountSats,
   }) async {
-    // 送金先を固定
-    const fixedLightningAddress = 'godzhigella@minibits.cash';
-    
     try {
-      debugPrint('🔄 NWC送金開始: $amountSats sats → $fixedLightningAddress');
+      debugPrint('🔄 NWC送金開始: $amountSats sats → $lightningAddress');
       
       // Rustブリッジを使用
       final paymentHash = await rust_api.payLightningInvoice(
         connectionString: connectionString,
-        lightningAddress: fixedLightningAddress,
+        lightningAddress: lightningAddress,
         amountSats: BigInt.from(amountSats),
       );
       

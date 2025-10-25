@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:alarm/alarm.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart' as app_models;
+import '../models/donation_recipient.dart';
 import '../providers/alarm_provider.dart';
 import '../providers/nwc_provider.dart';
 import '../app_theme.dart';
@@ -29,7 +30,6 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   app_models.Alarm? _alarm;
   bool _isProcessingPayment = false;
   String? _paymentError;
-  DateTime? _alarmStartTime;
   Timer? _autoPaymentTimer;
   Timer? _updateTimer;
   int _remainingSeconds = 0; // 初期値は0、アラーム読み込み時に設定
@@ -37,8 +37,6 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   @override
   void initState() {
     super.initState();
-    
-    _alarmStartTime = DateTime.now();
     
     // 全画面表示にする
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -100,7 +98,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
       _executeAutoPayment(context, ref);
     });
     
-    debugPrint('⏱️ 自動送金タイマー開始：${timeoutSeconds}秒後に実行');
+    debugPrint('⏱️ 自動送金タイマー開始：$timeoutSeconds秒後に実行');
   }
   
   /// 自動送金を実行
@@ -136,12 +134,18 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         return;
       }
       
+      // 送金先を取得（設定がなければデフォルト）
+      final recipientAddress = storage.getDonationRecipient() 
+          ?? DonationRecipients.defaultRecipient.lightningAddress;
+      
       debugPrint('💳 NWC経由で送金を開始します...');
+      debugPrint('📍 送金先: $recipientAddress');
       
       // Lightning送金を実行（NWC経由）
       final nwcService = ref.read(nwcServiceProvider);
       final paymentHash = await nwcService.payWithNwc(
         connectionString: nwcConnection,
+        lightningAddress: recipientAddress,
         amountSats: _alarm!.amountSats!,
       );
       
@@ -488,62 +492,6 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
               ),
       ),
     );
-  }
-  
-  /// アラームを停止（Lightning送金対応）
-  Future<void> _stopAlarm(
-    BuildContext context,
-    WidgetRef ref,
-    bool requiresPayment, {
-    bool forceStop = false, // タイムアウト時など、送金失敗してもアラームを停止する
-  }) async {
-    if (requiresPayment) {
-      setState(() {
-        _isProcessingPayment = true;
-        _paymentError = null;
-      });
-      
-      try {
-        // グローバルNWC接続文字列を取得
-        final storage = ref.read(storageServiceProvider);
-        final nwcConnection = storage.getGlobalNwcConnection();
-        
-        if (nwcConnection == null || nwcConnection.isEmpty) {
-          throw Exception('NWC接続が設定されていません。設定画面から設定してください。');
-        }
-        
-        // Lightning送金を実行（NWC経由）
-        final nwcService = ref.read(nwcServiceProvider);
-        final paymentHash = await nwcService.payWithNwc(
-          connectionString: nwcConnection,
-          amountSats: _alarm!.amountSats!,
-        );
-        
-        debugPrint('✅ 送金成功: $paymentHash');
-        
-        // 送金成功したらアラームを停止
-        if (!context.mounted) return;
-        await _stopAlarmAndCloseScreen(context, ref);
-      } catch (e) {
-        debugPrint('❌ 送金エラー: $e');
-        
-        if (forceStop) {
-          // タイムアウト時は送金失敗してもアラームを停止
-          debugPrint('⚠️ 送金失敗しましたが、タイムアウトのためアラームを停止します');
-          if (!context.mounted) return;
-          await _stopAlarmAndCloseScreen(context, ref);
-        } else {
-          // 手動停止時は送金失敗したらアラームを鳴らし続ける
-          setState(() {
-            _isProcessingPayment = false;
-            _paymentError = '送金に失敗しました: $e';
-          });
-        }
-      }
-    } else {
-      // Lightning設定なしの場合は即座に停止
-      await _stopAlarmAndCloseScreen(context, ref);
-    }
   }
   
   /// アラームを実際に停止して画面を閉じる

@@ -223,7 +223,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Supported wallets:\n• Alby (recommended)\n• Mutiny\n• Other NWC-compatible wallets';
 
   @override
-  String get recipientAddress => 'Recipient: godzhigella@minibits.cash (fixed)';
+  String get donationRecipient => 'Donation Recipient';
+
+  @override
+  String get donationRecipientDescription =>
+      'Choose where to send donations when alarm times out';
+
+  @override
+  String get selectRecipient => 'Select Recipient';
+
+  @override
+  String get recipientSaved => 'Donation recipient saved';
 
   @override
   String get nwcSaved => 'NWC settings saved';
@@ -252,7 +262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDescription2 =>
-      'If you don\'t stop the alarm,\nit will automatically zap the developer\n\nPerfect for those who can\'t wake up!';
+      'If you don\'t stop the alarm,\nit will automatically zap your chosen recipient\n\nPerfect for those who can\'t wake up!';
 
   @override
   String get onboardingTitle3 => 'Easy Setup';
