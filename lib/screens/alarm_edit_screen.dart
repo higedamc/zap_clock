@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart';
 import '../providers/alarm_provider.dart';
+import '../services/ringtone_service.dart';
 import '../app_theme.dart';
 
 /// アラーム設定画面
@@ -25,7 +26,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   late List<bool> _repeatDays;
   int? _amountSats;
   int? _timeoutSeconds;
+  String? _soundPath;
+  String? _soundName;
   Alarm? _originalAlarm;
+  final _ringtoneService = RingtoneService();
   
   // タイムアウトのプリセット（秒単位）
   static const List<int> _timeoutPresets = [15, 30, 60, 300, 600, 900];
@@ -79,6 +83,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                   _repeatDays = List.from(_originalAlarm!.repeatDays);
                   _amountSats = _originalAlarm!.amountSats;
                   _timeoutSeconds = _originalAlarm!.timeoutSeconds ?? 300;
+                  _soundPath = _originalAlarm!.soundPath;
+                  _soundName = _originalAlarm!.soundName;
                 } catch (e) {
                   // アラームが見つからない場合
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,8 +117,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           
           const Divider(height: 1),
           
-          // ラベル入力
-          _buildLabelInput(),
+          // ラベル入力と音源選択
+          _buildLabelAndSoundSection(),
           
           const Divider(height: 1),
           
@@ -185,27 +191,161 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// ラベル入力フィールド
-  Widget _buildLabelInput() {
+  /// ラベル入力と音源選択セクション
+  Widget _buildLabelAndSoundSection() {
     final l10n = AppLocalizations.of(context)!;
     
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: TextEditingController(text: _label)
-          ..selection = TextSelection.collapsed(offset: _label.length),
-        decoration: InputDecoration(
-          labelText: l10n.label,
-          hintText: l10n.labelHint,
-          prefixIcon: const Icon(Icons.label_outline),
-        ),
-        onChanged: (value) {
-          setState(() {
-            _label = value;
-          });
-        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ラベル入力
+          TextField(
+            controller: TextEditingController(text: _label)
+              ..selection = TextSelection.collapsed(offset: _label.length),
+            decoration: InputDecoration(
+              labelText: l10n.label,
+              hintText: l10n.labelHint,
+              prefixIcon: const Icon(Icons.label_outline),
+            ),
+            onChanged: (value) {
+              setState(() {
+                _label = value;
+              });
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // 音源選択（ラベルの下）
+          Row(
+            children: [
+              const Icon(
+                Icons.volume_up,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.alarmSound,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _soundName ?? l10n.defaultSound,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _selectSound,
+                icon: const Icon(Icons.music_note),
+                tooltip: l10n.selectSound,
+                color: AppTheme.primaryColor,
+              ),
+            ],
+          ),
+        ],
       ),
     );
+  }
+  
+  /// 音源を選択
+  Future<void> _selectSound() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // 選択肢をダイアログで表示
+    final result = await showDialog<_SoundSelection?>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.selectSound),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // デフォルト音源
+              ListTile(
+                leading: const Icon(Icons.music_note),
+                title: Text(l10n.defaultSound),
+                subtitle: const Text('alarm_sound.mp3'),
+                selected: _soundPath == null,
+                onTap: () => Navigator.of(context).pop(
+                  _SoundSelection(path: null, name: l10n.defaultSound),
+                ),
+              ),
+              const Divider(),
+              // システム音源
+              ListTile(
+                leading: const Icon(Icons.folder_special),
+                title: Text(l10n.systemSound),
+                subtitle: Text(l10n.selectFromDevice),
+                onTap: () async {
+                  Navigator.of(context).pop(
+                    _SoundSelection(path: 'SYSTEM_PICKER', name: ''),
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (result != null) {
+      if (result.path == 'SYSTEM_PICKER') {
+        // システム音源ピッカーを開く
+        try {
+          final ringtoneResult = await _ringtoneService.pickRingtone();
+          if (ringtoneResult != null) {
+            setState(() {
+              _soundPath = ringtoneResult['path'];
+              _soundName = ringtoneResult['name'];
+            });
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n.soundSelected(ringtoneResult['name']!)),
+                  backgroundColor: AppTheme.primaryColor,
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.soundSelectionFailed}: $e'),
+                backgroundColor: AppTheme.errorColor,
+              ),
+            );
+          }
+        }
+      } else {
+        // デフォルト音源
+        setState(() {
+          _soundPath = result.path;
+          _soundName = result.name;
+        });
+      }
+    }
   }
   
   /// 繰り返し曜日選択
@@ -296,6 +436,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           repeatDays: _repeatDays,
           amountSats: _amountSats,
           timeoutSeconds: _timeoutSeconds ?? 300,
+          soundPath: _soundPath,
+          soundName: _soundName,
         );
         await ref.read(alarmListProvider.notifier).addAlarm(newAlarm);
       } else {
@@ -308,6 +450,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           repeatDays: _repeatDays,
           amountSats: _amountSats,
           timeoutSeconds: _timeoutSeconds ?? 300,
+          soundPath: _soundPath,
+          soundName: _soundName,
         );
         await ref.read(alarmListProvider.notifier).updateAlarm(updatedAlarm);
       }
@@ -559,3 +703,10 @@ class _DayButton extends StatelessWidget {
   }
 }
 
+/// 音源選択の結果
+class _SoundSelection {
+  final String? path;
+  final String name;
+  
+  _SoundSelection({required this.path, required this.name});
+}

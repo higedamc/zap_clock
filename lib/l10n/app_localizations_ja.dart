@@ -49,6 +49,32 @@ class AppLocalizationsJa extends AppLocalizations {
   String get labelHint => '朝のアラーム';
 
   @override
+  String get alarmSound => 'アラーム音';
+
+  @override
+  String get selectSound => '音源を選択';
+
+  @override
+  String get defaultSound => 'デフォルト';
+
+  @override
+  String get soundNotSet => '設定なし（システム音）';
+
+  @override
+  String get systemSound => 'システム音源';
+
+  @override
+  String get selectFromDevice => '端末の音源から選択';
+
+  @override
+  String soundSelected(String name) {
+    return '音源を選択しました: $name';
+  }
+
+  @override
+  String get soundSelectionFailed => '音源の選択に失敗しました';
+
+  @override
   String get tapToChangeTime => 'タップして時刻を変更';
 
   @override

@@ -50,6 +50,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelHint => 'Morning alarm';
 
   @override
+  String get alarmSound => 'Alarm Sound';
+
+  @override
+  String get selectSound => 'Select Sound';
+
+  @override
+  String get defaultSound => 'Default';
+
+  @override
+  String get soundNotSet => 'Not set (System sound)';
+
+  @override
+  String get systemSound => 'System Sound';
+
+  @override
+  String get selectFromDevice => 'Select from device';
+
+  @override
+  String soundSelected(String name) {
+    return 'Sound selected: $name';
+  }
+
+  @override
+  String get soundSelectionFailed => 'Failed to select sound';
+
+  @override
   String get tapToChangeTime => 'Tap to change time';
 
   @override

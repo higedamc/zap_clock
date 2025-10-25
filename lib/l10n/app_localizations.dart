@@ -170,6 +170,54 @@ abstract class AppLocalizations {
   /// **'Morning alarm'**
   String get labelHint;
 
+  /// Alarm sound section title
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm Sound'**
+  String get alarmSound;
+
+  /// Button to select alarm sound
+  ///
+  /// In en, this message translates to:
+  /// **'Select Sound'**
+  String get selectSound;
+
+  /// Default alarm sound option
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultSound;
+
+  /// Message when no sound is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Not set (System sound)'**
+  String get soundNotSet;
+
+  /// System sound option
+  ///
+  /// In en, this message translates to:
+  /// **'System Sound'**
+  String get systemSound;
+
+  /// Instruction to select sound from device
+  ///
+  /// In en, this message translates to:
+  /// **'Select from device'**
+  String get selectFromDevice;
+
+  /// Success message when sound is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Sound selected: {name}'**
+  String soundSelected(String name);
+
+  /// Error message when sound selection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to select sound'**
+  String get soundSelectionFailed;
+
   /// Instruction to tap time picker
   ///
   /// In en, this message translates to:

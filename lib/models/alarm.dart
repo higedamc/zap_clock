@@ -26,6 +26,12 @@ class Alarm {
   /// この時間が経過すると自動的に送金される
   final int? timeoutSeconds;
   
+  /// アラーム音源のパス（nullの場合はデフォルト音源を使用）
+  final String? soundPath;
+  
+  /// アラーム音源の表示名
+  final String? soundName;
+  
   Alarm({
     required this.id,
     required this.hour,
@@ -35,6 +41,8 @@ class Alarm {
     List<bool>? repeatDays,
     this.amountSats,
     this.timeoutSeconds = 300, // デフォルト5分=300秒
+    this.soundPath,
+    this.soundName,
   }) : repeatDays = repeatDays ?? List.filled(7, false);
   
   /// 時刻を文字列で取得（例: "07:30"）
@@ -122,6 +130,8 @@ class Alarm {
       'repeatDays': repeatDays,
       'amountSats': amountSats,
       'timeoutSeconds': timeoutSeconds,
+      'soundPath': soundPath,
+      'soundName': soundName,
     };
   }
   
@@ -142,6 +152,8 @@ class Alarm {
       repeatDays: (json['repeatDays'] as List?)?.cast<bool>(),
       amountSats: json['amountSats'] as int?,
       timeoutSeconds: timeoutSecs ?? 300,
+      soundPath: json['soundPath'] as String?,
+      soundName: json['soundName'] as String?,
     );
   }
   
@@ -155,6 +167,8 @@ class Alarm {
     List<bool>? repeatDays,
     int? amountSats,
     int? timeoutSeconds,
+    String? soundPath,
+    String? soundName,
   }) {
     return Alarm(
       id: id ?? this.id,
@@ -165,6 +179,8 @@ class Alarm {
       repeatDays: repeatDays ?? List.from(this.repeatDays),
       amountSats: amountSats ?? this.amountSats,
       timeoutSeconds: timeoutSeconds ?? this.timeoutSeconds,
+      soundPath: soundPath ?? this.soundPath,
+      soundName: soundName ?? this.soundName,
     );
   }
   

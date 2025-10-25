@@ -20,10 +20,14 @@ class AlarmService {
     final nextAlarmTime = alarm.getNextAlarmTime();
     debugPrint('🔔 アラームをスケジュール: ID=${alarm.id}, 時刻=$nextAlarmTime');
     
+    // 音源パスを決定（nullの場合はデフォルト音源を使用）
+    final audioPath = alarm.soundPath ?? 'assets/alarm_sound.mp3';
+    debugPrint('🔊 使用する音源: $audioPath');
+    
     final alarmSettings = AlarmSettings(
       id: alarm.id,
       dateTime: nextAlarmTime,
-      assetAudioPath: 'assets/alarm_sound.mp3',
+      assetAudioPath: audioPath,
       loopAudio: true,
       vibrate: true,
       volumeSettings: VolumeSettings.fade(volume: 1.0, fadeDuration: const Duration(seconds: 2)),

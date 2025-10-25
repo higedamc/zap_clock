@@ -71,6 +71,51 @@
     "description": "Alarm label hint text"
   },
   
+  "alarmSound": "Alarm Sound",
+  "@alarmSound": {
+    "description": "Alarm sound section title"
+  },
+  
+  "selectSound": "Select Sound",
+  "@selectSound": {
+    "description": "Button to select alarm sound"
+  },
+  
+  "defaultSound": "Default",
+  "@defaultSound": {
+    "description": "Default alarm sound option"
+  },
+  
+  "soundNotSet": "Not set (System sound)",
+  "@soundNotSet": {
+    "description": "Message when no sound is selected"
+  },
+  
+  "systemSound": "System Sound",
+  "@systemSound": {
+    "description": "System sound option"
+  },
+  
+  "selectFromDevice": "Select from device",
+  "@selectFromDevice": {
+    "description": "Instruction to select sound from device"
+  },
+  
+  "soundSelected": "Sound selected: {name}",
+  "@soundSelected": {
+    "description": "Success message when sound is selected",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "soundSelectionFailed": "Failed to select sound",
+  "@soundSelectionFailed": {
+    "description": "Error message when sound selection fails"
+  },
+  
   "tapToChangeTime": "Tap to change time",
   "@tapToChangeTime": {
     "description": "Instruction to tap time picker"
