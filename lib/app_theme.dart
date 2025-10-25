@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// ZapClockアプリの統一テーマ設定
 class AppTheme {
-  // プライマリカラー - ビットコインのオレンジをイメージ
-  static const Color primaryColor = Color(0xFFF7931A);
-  static const Color primaryDark = Color(0xFFD67A00);
-  static const Color primaryLight = Color(0xFFFFAD47);
+  // プライマリカラー - Nostrの紫をイメージ
+  static const Color primaryColor = Color(0xFF8E30EB);
+  static const Color primaryDark = Color(0xFF6B23B0);
+  static const Color primaryLight = Color(0xFFA855F7);
   
-  // アクセントカラー - ライトニングの黄色
-  static const Color accentColor = Color(0xFFFFC107);
-  static const Color accentDark = Color(0xFFFFA000);
+  // アクセントカラー - 明るい紫・ピンク
+  static const Color accentColor = Color(0xFFC084FC);
+  static const Color accentDark = Color(0xFF9333EA);
   
   // 背景色
   static const Color backgroundColor = Color(0xFFF5F5F5);
