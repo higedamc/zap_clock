@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/nwc_provider.dart';
 import '../providers/alarm_provider.dart';
 import '../app_theme.dart';
@@ -25,9 +26,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('⚙️ 設定'),
+        title: Text(l10n.settingsTitle),
         actions: [
           // 保存ボタン
           Consumer(
@@ -35,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return IconButton(
                 icon: const Icon(Icons.save),
                 onPressed: () => _saveSettings(ref),
-                tooltip: '設定を保存',
+                tooltip: l10n.saveSettings,
               );
             },
           ),
@@ -54,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // NWC設定セクション
-                _buildSectionHeader('Nostr Wallet Connect'),
+                _buildSectionHeader(l10n.nwcTitle),
                 _buildNwcConnectionField(),
                 _buildTestConnectionButton(),
                 
@@ -86,15 +89,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
   
   Widget _buildNwcConnectionField() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextField(
         controller: _nwcConnectionController,
-        decoration: const InputDecoration(
-          labelText: 'NWC接続文字列',
-          hintText: 'nostr+walletconnect://...',
-          prefixIcon: Icon(Icons.link),
-          helperText: 'Alby、Mutinyなどから取得した接続文字列を入力',
+        decoration: InputDecoration(
+          labelText: l10n.nwcConnection,
+          hintText: l10n.nwcConnectionHint,
+          prefixIcon: const Icon(Icons.link),
+          helperText: l10n.nwcConnectionHelper,
         ),
         maxLines: 3,
         keyboardType: TextInputType.multiline,
@@ -103,6 +108,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
   
   Widget _buildTestConnectionButton() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Consumer(
@@ -115,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ElevatedButton.icon(
                 onPressed: () => _testConnection(ref),
                 icon: const Icon(Icons.wifi_tethering),
-                label: const Text('接続をテスト'),
+                label: Text(l10n.testConnection),
               ),
               
               const SizedBox(height: 8),
@@ -189,11 +196,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
   
   Future<void> _testConnection(WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final connectionString = _nwcConnectionController.text.trim();
     
     if (connectionString.isEmpty) {
       ref.read(nwcConnectionStatusProvider.notifier).state =
-          AsyncValue.error('接続文字列を入力してください', StackTrace.current);
+          AsyncValue.error(l10n.enterConnectionString, StackTrace.current);
       return;
     }
     
@@ -205,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final balanceSats = await nwcService.testConnection(connectionString);
       
       // 残高をメッセージに含める
-      final message = '接続成功！残高: $balanceSats sats';
+      final message = l10n.connectionSuccess(balanceSats);
       ref.read(nwcConnectionStatusProvider.notifier).state =
           AsyncValue.data(message);
     } catch (e) {
@@ -215,6 +223,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
   
   Widget _buildInfoSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
@@ -238,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'NWCについて',
+                  l10n.aboutNwc,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primaryColor,
@@ -247,19 +257,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Nostr Wallet Connect (NWC)は、Lightningウォレットをアプリに安全に接続する方法です。',
-              style: TextStyle(height: 1.5),
+            Text(
+              l10n.nwcDescription,
+              style: const TextStyle(height: 1.5),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '対応ウォレット：\n• Alby（推奨）\n• Mutiny\n• その他NWC対応ウォレット',
-              style: TextStyle(height: 1.5),
+            Text(
+              l10n.supportedWallets,
+              style: const TextStyle(height: 1.5),
             ),
             const SizedBox(height: 12),
-            const Text(
-              '送金先: godzhigella@minibits.cash（固定）',
-              style: TextStyle(
+            Text(
+              l10n.recipientAddress,
+              style: const TextStyle(
                 height: 1.5,
                 fontWeight: FontWeight.bold,
               ),
@@ -282,6 +292,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   /// 設定を保存
   Future<void> _saveSettings(WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final storage = ref.read(storageServiceProvider);
     
     // NWC接続文字列を保存
@@ -293,9 +304,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       
       // 保存完了メッセージを表示
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('NWC設定を保存しました'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(l10n.nwcSaved),
+          duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),
       );
@@ -303,9 +314,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('NWC接続文字列を入力してください'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(l10n.enterNwcConnection),
+          duration: const Duration(seconds: 2),
           backgroundColor: Colors.orange,
         ),
       );
