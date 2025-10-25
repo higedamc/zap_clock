@@ -108,18 +108,6 @@ class _MyAppState extends ConsumerState<MyApp> {
         _navigateToRingScreen(alarmSettings.id);
       }
     });
-    
-    // アプリ起動時に鳴動中のアラームをチェック
-    _checkRingingAlarms();
-  }
-
-  /// 鳴動中のアラームをチェックし、該当があれば画面遷移
-  Future<void> _checkRingingAlarms() async {
-    final ringingAlarms = await Alarm.getAlarms();
-    if (ringingAlarms.isNotEmpty) {
-      debugPrint('🔔 起動時に鳴動中のアラームを検出: ${ringingAlarms.length}件');
-      _navigateToRingScreen(ringingAlarms.first.id);
-    }
   }
 
   /// アラーム鳴動画面に遷移
