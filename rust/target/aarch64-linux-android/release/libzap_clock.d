@@ -1,0 +1,1 @@
+/Users/apple/work/zap_clock/rust/target/aarch64-linux-android/release/libzap_clock.so: /Users/apple/work/zap_clock/rust/src/api.rs /Users/apple/work/zap_clock/rust/src/frb_generated.rs /Users/apple/work/zap_clock/rust/src/lib.rs /Users/apple/work/zap_clock/rust/src/lightning.rs /Users/apple/work/zap_clock/rust/src/nwc.rs

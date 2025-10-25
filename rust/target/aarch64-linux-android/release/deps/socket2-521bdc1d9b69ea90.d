@@ -1,0 +1,11 @@
+/Users/apple/work/zap_clock/rust/target/aarch64-linux-android/release/deps/socket2-521bdc1d9b69ea90.d: /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/lib.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockaddr.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/socket.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockref.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sys/unix.rs
+
+/Users/apple/work/zap_clock/rust/target/aarch64-linux-android/release/deps/libsocket2-521bdc1d9b69ea90.rlib: /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/lib.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockaddr.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/socket.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockref.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sys/unix.rs
+
+/Users/apple/work/zap_clock/rust/target/aarch64-linux-android/release/deps/libsocket2-521bdc1d9b69ea90.rmeta: /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/lib.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockaddr.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/socket.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockref.rs /Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sys/unix.rs
+
+/Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/lib.rs:
+/Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockaddr.rs:
+/Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/socket.rs:
+/Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sockref.rs:
+/Users/apple/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.1/src/sys/unix.rs:

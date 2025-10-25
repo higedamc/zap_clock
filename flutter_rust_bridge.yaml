@@ -1,0 +1,6 @@
+# Flutter Rust Bridge Configuration
+rust_input: crate::api
+rust_root: rust/
+dart_output: lib/bridge_generated.dart
+dart_format_line_length: 120
+
