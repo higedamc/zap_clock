@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../models/donation_recipient.dart';
 import '../providers/nwc_provider.dart';
-import '../providers/alarm_provider.dart';
+import '../providers/storage_provider.dart';
 import '../app_theme.dart';
 
 /// NWC/Lightning設定画面

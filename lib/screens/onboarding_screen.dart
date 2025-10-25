@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../app_theme.dart';
-import '../providers/alarm_provider.dart';
+import '../providers/storage_provider.dart';
 
 /// オンボーディング画面
 /// 初回起動時にアプリの使い方を説明

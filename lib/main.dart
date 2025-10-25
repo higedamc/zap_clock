@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:alarm/alarm.dart';
 import 'app_theme.dart';
-import 'providers/alarm_provider.dart';
+import 'providers/storage_provider.dart';
 import 'screens/alarm_list_screen.dart';
 import 'screens/alarm_edit_screen.dart';
 import 'screens/alarm_ring_screen.dart';

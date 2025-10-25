@@ -43,3 +43,4 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+rust/target/aarch64-linux-android/release/.fingerprint/zap_clock-454db2a4a8f6a860/dep-lib-zap_clock
