@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 import '../models/alarm.dart';
 import '../providers/alarm_provider.dart';
 import '../app_theme.dart';
@@ -29,16 +30,6 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   // タイムアウトのプリセット（秒単位）
   static const List<int> _timeoutPresets = [15, 30, 60, 300, 600, 900];
   
-  // プリセットのラベル
-  static const Map<int, String> _timeoutLabels = {
-    15: '15秒',
-    30: '30秒',
-    60: '1分',
-    300: '5分',
-    600: '10分',
-    900: '15分',
-  };
-  
   @override
   void initState() {
     super.initState();
@@ -54,9 +45,11 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.alarmId == null ? '新しいアラーム' : 'アラームを編集'),
+        title: Text(widget.alarmId == null ? l10n.newAlarm : l10n.editAlarm),
         actions: [
           if (widget.alarmId != null)
             Consumer(
@@ -148,9 +141,9 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text(
-                      '保存',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    child: Text(
+                      AppLocalizations.of(context)!.save,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   );
                 },
@@ -181,7 +174,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'タップして時刻を変更',
+              AppLocalizations.of(context)!.tapToChangeTime,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppTheme.textHint,
               ),
@@ -194,15 +187,17 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// ラベル入力フィールド
   Widget _buildLabelInput() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: TextField(
         controller: TextEditingController(text: _label)
           ..selection = TextSelection.collapsed(offset: _label.length),
-        decoration: const InputDecoration(
-          labelText: 'ラベル',
-          hintText: '朝のアラーム',
-          prefixIcon: Icon(Icons.label_outline),
+        decoration: InputDecoration(
+          labelText: l10n.label,
+          hintText: l10n.labelHint,
+          prefixIcon: const Icon(Icons.label_outline),
         ),
         onChanged: (value) {
           setState(() {
@@ -215,7 +210,16 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// 繰り返し曜日選択
   Widget _buildRepeatDays() {
-    const dayNames = ['月', '火', '水', '木', '金', '土', '日'];
+    final l10n = AppLocalizations.of(context)!;
+    final dayNames = [
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
+    ];
     
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -223,7 +227,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '繰り返し',
+            l10n.repeat,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: AppTheme.textSecondary,
             ),
@@ -325,23 +329,25 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// 削除確認ダイアログ
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('アラームを削除'),
-          content: const Text('このアラームを削除してもよろしいですか？'),
+          title: Text(l10n.deleteAlarm),
+          content: Text(l10n.deleteAlarmConfirm),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.errorColor,
               ),
-              child: const Text('削除'),
+              child: Text(l10n.delete),
             ),
           ],
         );
@@ -358,6 +364,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// Lightningセクションヘッダー
   Widget _buildLightningSectionHeader() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
@@ -369,7 +377,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            'Lightning送金設定（オプション）',
+            l10n.lightningSettings,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: AppTheme.textSecondary,
             ),
@@ -381,6 +389,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// Lightning設定フィールド
   Widget _buildLightningSettings() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -392,10 +402,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
             )..selection = TextSelection.collapsed(
                 offset: _amountSats?.toString().length ?? 0,
               ),
-            decoration: const InputDecoration(
-              labelText: '送金額',
-              hintText: '1000',
-              prefixIcon: Icon(Icons.monetization_on),
+            decoration: InputDecoration(
+              labelText: l10n.amount,
+              hintText: l10n.amountHint,
+              prefixIcon: const Icon(Icons.monetization_on),
               suffixText: 'sats',
             ),
             keyboardType: TextInputType.number,
@@ -417,7 +427,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                   const Icon(Icons.timer, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    '自動送金までの時間',
+                    l10n.autoPaymentTime,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ],
@@ -429,7 +439,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                 children: _timeoutPresets.map((seconds) {
                   final isSelected = _timeoutSeconds == seconds;
                   return ChoiceChip(
-                    label: Text(_timeoutLabels[seconds]!),
+                    label: Text(_getTimeoutLabel(l10n, seconds)),
                     selected: isSelected,
                     onSelected: (selected) {
                       if (selected) {
@@ -448,7 +458,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'この時間が経過すると自動的に送金されます',
+                l10n.timeoutDescription,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppTheme.textSecondary,
                 ),
@@ -476,7 +486,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '送金額を設定すると、指定時間内にアラームを止めないと自動的にLightning送金されます',
+                    l10n.lightningSettingsDescription,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.textSecondary,
                     ),
@@ -488,6 +498,26 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
         ],
       ),
     );
+  }
+  
+  /// タイムアウトラベルを取得
+  String _getTimeoutLabel(AppLocalizations l10n, int seconds) {
+    switch (seconds) {
+      case 15:
+        return l10n.timeout15s;
+      case 30:
+        return l10n.timeout30s;
+      case 60:
+        return l10n.timeout1m;
+      case 300:
+        return l10n.timeout5m;
+      case 600:
+        return l10n.timeout10m;
+      case 900:
+        return l10n.timeout15m;
+      default:
+        return '$seconds';
+    }
   }
 }
 

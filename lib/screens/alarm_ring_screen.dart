@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:alarm/alarm.dart';
+import '../l10n/app_localizations.dart';
 import '../models/alarm.dart' as app_models;
 import '../providers/alarm_provider.dart';
 import '../providers/nwc_provider.dart';
@@ -296,6 +297,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   /// 送金情報を表示
   Widget _buildPaymentInfo() {
     final hasPaymentConfig = _alarm?.amountSats != null;
+    final l10n = AppLocalizations.of(context)!;
     
     if (!hasPaymentConfig) {
       return Container(
@@ -304,26 +306,26 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
           color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(
+            const Icon(
               Icons.alarm_off,
               color: Colors.white,
               size: 32,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Lightning設定なし',
-              style: TextStyle(
+              l10n.noLightningSettings,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
-              'ボタンを押して停止してください',
-              style: TextStyle(
+              l10n.pressToStop,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
               ),
@@ -342,18 +344,18 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.flash_on,
                 color: Colors.white,
                 size: 24,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                '自動送金アラーム',
-                style: TextStyle(
+                l10n.autoPaymentAlarm,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -383,7 +385,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            _formatTimeoutMessage(_alarm!.timeoutSeconds ?? 300),
+            _formatTimeoutMessage(l10n, _alarm!.timeoutSeconds ?? 300),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 12,
@@ -441,6 +443,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   /// 手動停止ボタン
   Widget _buildStopButton(BuildContext context, WidgetRef ref) {
     final hasPaymentConfig = _alarm?.amountSats != null;
+    final l10n = AppLocalizations.of(context)!;
     
     return SizedBox(
       width: double.infinity,
@@ -475,7 +478,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    hasPaymentConfig ? '今すぐ停止（送金なし）' : 'アラームを停止',
+                    hasPaymentConfig ? l10n.stopNow : l10n.stopAlarm,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -575,12 +578,12 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   }
   
   /// タイムアウト時間を表示用メッセージに変換
-  String _formatTimeoutMessage(int seconds) {
+  String _formatTimeoutMessage(AppLocalizations l10n, int seconds) {
     if (seconds < 60) {
-      return '$seconds秒以内に停止しないと自動送金されます';
+      return l10n.timeoutMessageSeconds(seconds);
     } else {
       final minutes = seconds ~/ 60;
-      return '$minutes分以内に停止しないと自動送金されます';
+      return l10n.timeoutMessageMinutes(minutes);
     }
   }
 }

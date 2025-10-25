@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 import '../app_theme.dart';
 import '../providers/alarm_provider.dart';
 
@@ -16,33 +17,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
-  final List<_OnboardingPage> _pages = const [
-    _OnboardingPage(
-      icon: Icons.alarm,
-      iconColor: AppTheme.primaryColor,
-      title: 'ZapClock へようこそ',
-      description: 'Nostr Wallet Connect (NWC) を使った\n革新的なアラームアプリです',
-    ),
-    _OnboardingPage(
-      icon: Icons.flash_on,
-      iconColor: AppTheme.accentColor,
-      title: '自動送金アラーム',
-      description: 'アラームを止めないと\n自動的に開発者に zap されます\n\n起きられないあなたへ最適！',
-    ),
-    _OnboardingPage(
-      icon: Icons.settings,
-      iconColor: Colors.orange,
-      title: '簡単設定',
-      description: '1. NWC 接続を設定\n2. アラーム時刻を設定\n3. 送金額とタイムアウトを設定\n\nこれだけでOK！',
-    ),
-    _OnboardingPage(
-      icon: Icons.done_all,
-      iconColor: Colors.green,
-      title: '準備完了',
-      description: 'さあ、ZapClock で\n規則正しい生活を始めましょう！',
-    ),
-  ];
 
   @override
   void dispose() {
@@ -66,22 +40,52 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // ローカライズされたページを生成
+    final pages = [
+      _OnboardingPage(
+        icon: Icons.alarm,
+        iconColor: AppTheme.primaryColor,
+        title: l10n.onboardingTitle1,
+        description: l10n.onboardingDescription1,
+      ),
+      _OnboardingPage(
+        icon: Icons.flash_on,
+        iconColor: AppTheme.accentColor,
+        title: l10n.onboardingTitle2,
+        description: l10n.onboardingDescription2,
+      ),
+      _OnboardingPage(
+        icon: Icons.settings,
+        iconColor: Colors.orange,
+        title: l10n.onboardingTitle3,
+        description: l10n.onboardingDescription3,
+      ),
+      _OnboardingPage(
+        icon: Icons.done_all,
+        iconColor: Colors.green,
+        title: l10n.onboardingTitle4,
+        description: l10n.onboardingDescription4,
+      ),
+    ];
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             // スキップボタン
-            if (_currentPage < _pages.length - 1)
+            if (_currentPage < pages.length - 1)
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () => _pageController.animateToPage(
-                    _pages.length - 1,
+                    pages.length - 1,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                   ),
-                  child: const Text('スキップ'),
+                  child: Text(l10n.skip),
                 ),
               )
             else
@@ -92,9 +96,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 itemBuilder: (context, index) {
-                  return _pages[index];
+                  return pages[index];
                 },
               ),
             ),
@@ -103,7 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                _pages.length,
+                pages.length,
                 (index) => _buildPageIndicator(index),
               ),
             ),
@@ -118,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   return SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _currentPage == _pages.length - 1
+                      onPressed: _currentPage == pages.length - 1
                           ? () => _completeOnboarding(context, ref)
                           : () {
                               _pageController.nextPage(
@@ -134,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       child: Text(
-                        _currentPage == _pages.length - 1 ? '始める' : '次へ',
+                        _currentPage == pages.length - 1 ? l10n.start : l10n.next,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

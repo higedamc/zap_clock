@@ -1,0 +1,384 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "⚡ ZapClock",
+  "@appTitle": {
+    "description": "Application title"
+  },
+  
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings button tooltip"
+  },
+  
+  "errorOccurred": "An error occurred",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+  
+  "reload": "Reload",
+  "@reload": {
+    "description": "Reload button text"
+  },
+  
+  "noAlarms": "No alarms",
+  "@noAlarms": {
+    "description": "Empty state title when there are no alarms"
+  },
+  
+  "noAlarmsDescription": "Tap the + button below\nto add a new alarm",
+  "@noAlarmsDescription": {
+    "description": "Empty state description"
+  },
+  
+  "timeoutSeconds": "Auto-send in {seconds}s if not stopped",
+  "@timeoutSeconds": {
+    "description": "Timeout message in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "timeoutMinutes": "Auto-send in {minutes}min if not stopped",
+  "@timeoutMinutes": {
+    "description": "Timeout message in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "newAlarm": "New Alarm",
+  "@newAlarm": {
+    "description": "Title for creating a new alarm"
+  },
+  
+  "editAlarm": "Edit Alarm",
+  "@editAlarm": {
+    "description": "Title for editing an alarm"
+  },
+  
+  "label": "Label",
+  "@label": {
+    "description": "Alarm label field"
+  },
+  
+  "labelHint": "Morning alarm",
+  "@labelHint": {
+    "description": "Alarm label hint text"
+  },
+  
+  "tapToChangeTime": "Tap to change time",
+  "@tapToChangeTime": {
+    "description": "Instruction to tap time picker"
+  },
+  
+  "repeat": "Repeat",
+  "@repeat": {
+    "description": "Repeat days section title"
+  },
+  
+  "monday": "Mon",
+  "@monday": {
+    "description": "Monday abbreviation"
+  },
+  
+  "tuesday": "Tue",
+  "@tuesday": {
+    "description": "Tuesday abbreviation"
+  },
+  
+  "wednesday": "Wed",
+  "@wednesday": {
+    "description": "Wednesday abbreviation"
+  },
+  
+  "thursday": "Thu",
+  "@thursday": {
+    "description": "Thursday abbreviation"
+  },
+  
+  "friday": "Fri",
+  "@friday": {
+    "description": "Friday abbreviation"
+  },
+  
+  "saturday": "Sat",
+  "@saturday": {
+    "description": "Saturday abbreviation"
+  },
+  
+  "sunday": "Sun",
+  "@sunday": {
+    "description": "Sunday abbreviation"
+  },
+  
+  "lightningSettings": "Lightning Payment Settings (Optional)",
+  "@lightningSettings": {
+    "description": "Lightning settings section title"
+  },
+  
+  "amount": "Amount",
+  "@amount": {
+    "description": "Payment amount field"
+  },
+  
+  "amountHint": "1000",
+  "@amountHint": {
+    "description": "Amount hint text"
+  },
+  
+  "autoPaymentTime": "Auto-payment timeout",
+  "@autoPaymentTime": {
+    "description": "Auto-payment timeout section title"
+  },
+  
+  "timeout15s": "15s",
+  "@timeout15s": {
+    "description": "15 seconds timeout option"
+  },
+  
+  "timeout30s": "30s",
+  "@timeout30s": {
+    "description": "30 seconds timeout option"
+  },
+  
+  "timeout1m": "1min",
+  "@timeout1m": {
+    "description": "1 minute timeout option"
+  },
+  
+  "timeout5m": "5min",
+  "@timeout5m": {
+    "description": "5 minutes timeout option"
+  },
+  
+  "timeout10m": "10min",
+  "@timeout10m": {
+    "description": "10 minutes timeout option"
+  },
+  
+  "timeout15m": "15min",
+  "@timeout15m": {
+    "description": "15 minutes timeout option"
+  },
+  
+  "timeoutDescription": "Payment will be sent automatically after this time",
+  "@timeoutDescription": {
+    "description": "Timeout description"
+  },
+  
+  "lightningSettingsDescription": "If you set an amount, payment will be sent automatically if you don't stop the alarm within the specified time",
+  "@lightningSettingsDescription": {
+    "description": "Lightning settings detailed description"
+  },
+  
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  
+  "deleteAlarm": "Delete Alarm",
+  "@deleteAlarm": {
+    "description": "Delete alarm dialog title"
+  },
+  
+  "deleteAlarmConfirm": "Are you sure you want to delete this alarm?",
+  "@deleteAlarmConfirm": {
+    "description": "Delete confirmation message"
+  },
+  
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  
+  "noLightningSettings": "No Lightning settings",
+  "@noLightningSettings": {
+    "description": "No Lightning settings message on ring screen"
+  },
+  
+  "pressToStop": "Press button to stop",
+  "@pressToStop": {
+    "description": "Instruction to press stop button"
+  },
+  
+  "autoPaymentAlarm": "Auto-payment alarm",
+  "@autoPaymentAlarm": {
+    "description": "Auto-payment alarm title on ring screen"
+  },
+  
+  "timeoutMessageSeconds": "Auto-send in {seconds}s if not stopped",
+  "@timeoutMessageSeconds": {
+    "description": "Timeout message on ring screen (seconds)",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "timeoutMessageMinutes": "Auto-send in {minutes}min if not stopped",
+  "@timeoutMessageMinutes": {
+    "description": "Timeout message on ring screen (minutes)",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "stopNow": "Stop now (no payment)",
+  "@stopNow": {
+    "description": "Stop alarm button text when payment is configured"
+  },
+  
+  "stopAlarm": "Stop Alarm",
+  "@stopAlarm": {
+    "description": "Stop alarm button text when no payment"
+  },
+  
+  "settingsTitle": "⚙️ Settings",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+  
+  "saveSettings": "Save settings",
+  "@saveSettings": {
+    "description": "Save settings tooltip"
+  },
+  
+  "nwcTitle": "Nostr Wallet Connect",
+  "@nwcTitle": {
+    "description": "NWC section title"
+  },
+  
+  "nwcConnection": "NWC connection string",
+  "@nwcConnection": {
+    "description": "NWC connection field label"
+  },
+  
+  "nwcConnectionHint": "nostr+walletconnect://...",
+  "@nwcConnectionHint": {
+    "description": "NWC connection hint"
+  },
+  
+  "nwcConnectionHelper": "Enter connection string from Alby, Mutiny, etc.",
+  "@nwcConnectionHelper": {
+    "description": "NWC connection helper text"
+  },
+  
+  "testConnection": "Test Connection",
+  "@testConnection": {
+    "description": "Test connection button text"
+  },
+  
+  "connectionSuccess": "Connection successful! Balance: {balance} sats",
+  "@connectionSuccess": {
+    "description": "Connection success message",
+    "placeholders": {
+      "balance": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "enterConnectionString": "Please enter connection string",
+  "@enterConnectionString": {
+    "description": "Error when connection string is empty"
+  },
+  
+  "aboutNwc": "About NWC",
+  "@aboutNwc": {
+    "description": "About NWC section title"
+  },
+  
+  "nwcDescription": "Nostr Wallet Connect (NWC) is a way to securely connect your Lightning wallet to apps.",
+  "@nwcDescription": {
+    "description": "NWC description"
+  },
+  
+  "supportedWallets": "Supported wallets:\n• Alby (recommended)\n• Mutiny\n• Other NWC-compatible wallets",
+  "@supportedWallets": {
+    "description": "Supported wallets list"
+  },
+  
+  "recipientAddress": "Recipient: godzhigella@minibits.cash (fixed)",
+  "@recipientAddress": {
+    "description": "Payment recipient address"
+  },
+  
+  "nwcSaved": "NWC settings saved",
+  "@nwcSaved": {
+    "description": "Success message when NWC settings are saved"
+  },
+  
+  "enterNwcConnection": "Please enter NWC connection string",
+  "@enterNwcConnection": {
+    "description": "Warning when trying to save without connection string"
+  },
+  
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text on onboarding"
+  },
+  
+  "next": "Next",
+  "@next": {
+    "description": "Next button text on onboarding"
+  },
+  
+  "start": "Start",
+  "@start": {
+    "description": "Start button text on last onboarding page"
+  },
+  
+  "onboardingTitle1": "Welcome to ZapClock",
+  "@onboardingTitle1": {
+    "description": "Onboarding page 1 title"
+  },
+  
+  "onboardingDescription1": "An innovative alarm app\nusing Nostr Wallet Connect (NWC)",
+  "@onboardingDescription1": {
+    "description": "Onboarding page 1 description"
+  },
+  
+  "onboardingTitle2": "Auto-payment Alarm",
+  "@onboardingTitle2": {
+    "description": "Onboarding page 2 title"
+  },
+  
+  "onboardingDescription2": "If you don't stop the alarm,\nit will automatically zap the developer\n\nPerfect for those who can't wake up!",
+  "@onboardingDescription2": {
+    "description": "Onboarding page 2 description"
+  },
+  
+  "onboardingTitle3": "Easy Setup",
+  "@onboardingTitle3": {
+    "description": "Onboarding page 3 title"
+  },
+  
+  "onboardingDescription3": "1. Set up NWC connection\n2. Set alarm time\n3. Set amount and timeout\n\nThat's it!",
+  "@onboardingDescription3": {
+    "description": "Onboarding page 3 description"
+  },
+  
+  "onboardingTitle4": "Ready to Go",
+  "@onboardingTitle4": {
+    "description": "Onboarding page 4 title"
+  },
+  
+  "onboardingDescription4": "Let's start living a\nmore regular life with ZapClock!",
+  "@onboardingDescription4": {
+    "description": "Onboarding page 4 description"
+  }
+}
+

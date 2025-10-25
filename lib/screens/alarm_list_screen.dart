@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/alarm_provider.dart';
 import '../models/alarm.dart';
 import '../app_theme.dart';
@@ -11,16 +12,18 @@ class AlarmListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('⚡ ZapClock'),
+        title: Text(l10n.appTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               context.push('/settings');
             },
-            tooltip: '設定',
+            tooltip: l10n.settings,
           ),
         ],
       ),
@@ -49,7 +52,7 @@ class AlarmListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'エラーが発生しました',
+                    l10n.errorOccurred,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
@@ -64,7 +67,7 @@ class AlarmListScreen extends StatelessWidget {
                       ref.read(alarmListProvider.notifier).loadAlarms();
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('再読み込み'),
+                    label: Text(l10n.reload),
                   ),
                 ],
               ),
@@ -87,6 +90,8 @@ class AlarmListScreen extends StatelessWidget {
   
   /// 空の状態を表示
   Widget _buildEmptyState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -98,14 +103,14 @@ class AlarmListScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'アラームがありません',
+            l10n.noAlarms,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: AppTheme.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            '右下の + ボタンから\n新しいアラームを追加しましょう',
+            l10n.noAlarmsDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.textHint,
             ),
@@ -229,7 +234,7 @@ class _AlarmListItem extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  _formatTimeout(alarm.timeoutSeconds ?? 300),
+                                  _formatTimeout(context, alarm.timeoutSeconds ?? 300),
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: AppTheme.textSecondary,
                                     fontSize: 11,
@@ -262,12 +267,14 @@ class _AlarmListItem extends StatelessWidget {
   }
   
   /// タイムアウト時間を人間が読みやすい形式に変換
-  String _formatTimeout(int seconds) {
+  String _formatTimeout(BuildContext context, int seconds) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (seconds < 60) {
-      return '$seconds秒以内に停止しないと自動送金';
+      return l10n.timeoutSeconds(seconds);
     } else {
       final minutes = seconds ~/ 60;
-      return '$minutes分以内に停止しないと自動送金';
+      return l10n.timeoutMinutes(minutes);
     }
   }
 }
