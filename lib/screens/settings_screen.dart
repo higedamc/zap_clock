@@ -548,7 +548,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
   
-  /// 送金先選択セクション
+  /// グローバル送金先選択セクション
   Widget _buildDonationRecipientSection() {
     final l10n = AppLocalizations.of(context)!;
     
@@ -558,7 +558,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.donationRecipientDescription,
+            'アラーム作成時のデフォルト寄付先として使用されます',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.textSecondary,
             ),
@@ -617,63 +617,143 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          
+          // カスタム寄付先を追加ボタン
+          Consumer(
+            builder: (context, ref, child) {
+              return SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _addCustomRecipient(ref),
+                  icon: const Icon(Icons.add),
+                  label: const Text('カスタム寄付先を追加'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
   }
   
-  /// 送金先を選択
+  /// グローバル送金先を選択
   Future<void> _selectDonationRecipient() async {
     final l10n = AppLocalizations.of(context)!;
     
     final selected = await showDialog<DonationRecipient?>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(l10n.selectRecipient),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: DonationRecipients.presetsSync.length,
-              itemBuilder: (context, index) {
-                final recipient = DonationRecipients.presetsSync[index];
-                final isSelected = _selectedRecipient?.lightningAddress == recipient.lightningAddress;
-                
-                return ListTile(
-                  leading: Text(
-                    recipient.emoji,
-                    style: const TextStyle(fontSize: 32),
-                  ),
-                  title: Text(recipient.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(recipient.description),
-                      const SizedBox(height: 4),
-                      Text(
-                        recipient.lightningAddress,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                          color: AppTheme.primaryColor,
-                        ),
+        return Consumer(
+          builder: (context, ref, child) {
+            // プリセット + カスタムを結合
+            final presets = DonationRecipients.presetsSync;
+            final customRecipients = ref.read(storageServiceProvider).getCustomRecipients();
+            final allRecipients = [...presets, ...customRecipients];
+            
+            return AlertDialog(
+              title: Text(l10n.selectRecipient),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: allRecipients.length,
+                  itemBuilder: (context, index) {
+                    final recipient = allRecipients[index];
+                    final isSelected = _selectedRecipient?.lightningAddress == recipient.lightningAddress;
+                    final isCustom = index >= presets.length;
+                    
+                    return ListTile(
+                      leading: Text(
+                        recipient.emoji,
+                        style: const TextStyle(fontSize: 32),
                       ),
-                    ],
-                  ),
-                  selected: isSelected,
-                  selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
-                  onTap: () => Navigator.of(context).pop(recipient),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancel),
-            ),
-          ],
+                      title: Row(
+                        children: [
+                          Expanded(child: Text(recipient.name)),
+                          if (isCustom)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.star,
+                                size: 16,
+                                color: Colors.amber,
+                              ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(recipient.description),
+                          const SizedBox(height: 4),
+                          Text(
+                            recipient.lightningAddress,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      selected: isSelected,
+                      selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
+                      trailing: isCustom
+                          ? IconButton(
+                              icon: const Icon(Icons.delete, size: 20),
+                              onPressed: () async {
+                                final shouldDelete = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('削除確認'),
+                                    content: Text('「${recipient.name}」を削除しますか？'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: const Text('キャンセル'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: AppTheme.errorColor,
+                                        ),
+                                        child: const Text('削除'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                
+                                if (shouldDelete == true) {
+                                  await ref
+                                      .read(storageServiceProvider)
+                                      .deleteCustomRecipient(recipient.lightningAddress);
+                                  
+                                  // 画面を更新
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                    _selectDonationRecipient();
+                                  }
+                                }
+                              },
+                            )
+                          : null,
+                      onTap: () => Navigator.of(context).pop(recipient),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -683,6 +763,173 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _selectedRecipient = selected;
       });
     }
+  }
+  
+  /// カスタム寄付先を追加
+  Future<void> _addCustomRecipient(WidgetRef ref) async {
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String selectedEmoji = '💝';
+    
+    final commonEmojis = ['💝', '⚡', '🧡', '💰', '🎁', '🌟', '❤️', '💙', '💚', '💛'];
+    
+    final result = await showDialog<DonationRecipient?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('カスタム寄付先を追加'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 絵文字選択
+                    const Text(
+                      '絵文字を選択',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: commonEmojis.map((emoji) {
+                        final isSelected = selectedEmoji == emoji;
+                        return InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              selectedEmoji = emoji;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 名前入力
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: '名前 *',
+                        hintText: '例: Bitcoin Magazine',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Lightning Address 入力
+                    TextField(
+                      controller: addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Lightning Address *',
+                        hintText: '例: tips@bitcoin.com',
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 説明入力
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: '説明',
+                        hintText: '例: Bitcoin news and education',
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('キャンセル'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final address = addressController.text.trim();
+                    final description = descriptionController.text.trim();
+                    
+                    if (name.isEmpty || address.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('名前とLightning Addressは必須です'),
+                          backgroundColor: AppTheme.errorColor,
+                        ),
+                      );
+                      return;
+                    }
+                    
+                    // Lightning Address の形式チェック
+                    if (!address.contains('@')) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Lightning Addressの形式が正しくありません'),
+                          backgroundColor: AppTheme.errorColor,
+                        ),
+                      );
+                      return;
+                    }
+                    
+                    final recipient = DonationRecipient(
+                      name: name,
+                      lightningAddress: address,
+                      description: description.isEmpty ? 'Custom recipient' : description,
+                      emoji: selectedEmoji,
+                    );
+                    
+                    Navigator.of(context).pop(recipient);
+                  },
+                  child: const Text('追加'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    
+    if (result != null && mounted) {
+      final storage = ref.read(storageServiceProvider);
+      final success = await storage.addCustomRecipient(result);
+      
+      if (!mounted) return;
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('「${result.name}」を追加しました'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('この Lightning Address は既に登録されています'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+    
+    nameController.dispose();
+    addressController.dispose();
+    descriptionController.dispose();
   }
   
   /// 設定を読み込む
@@ -726,7 +973,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
     
-    // 送金先を保存
+    // グローバル送金先を保存
     if (_selectedRecipient != null) {
       await storage.setDonationRecipient(_selectedRecipient!.lightningAddress);
       // 寄付先Providerも更新（アラーム一覧画面のカード表記を更新するため）
@@ -739,7 +986,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${l10n.nwcSaved}\n${l10n.recipientSaved}'),
+          content: Text('${l10n.nwcSaved}\n寄付先を保存しました'),
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),

@@ -12,6 +12,8 @@ struct LnurlPayResponse {
     min_sendable: u64,
     metadata: String,
     tag: String,
+    #[serde(rename = "commentAllowed")]
+    comment_allowed: Option<u64>, // コメントの最大文字数（オプション）
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,6 +38,7 @@ impl LightningPayment {
         &self,
         lightning_address: &str,
         amount_sats: u64,
+        comment: Option<String>,
     ) -> Result<String> {
         println!("🔍 [Lightning] Invoice取得開始: {} sats → {}", amount_sats, lightning_address);
         
@@ -88,10 +91,26 @@ impl LightningPayment {
         
         // Step 2: Invoiceを取得
         println!("📡 [Lightning] Invoiceリクエスト: {} msats", amount_msats);
+        
+        // コメントの処理
+        let mut query_params = vec![("amount", amount_msats.to_string())];
+        if let Some(comment_text) = comment {
+            if let Some(max_comment_len) = lnurl_response.comment_allowed {
+                if comment_text.len() <= max_comment_len as usize {
+                    println!("💬 [Lightning] コメント追加: {}", comment_text);
+                    query_params.push(("comment", comment_text));
+                } else {
+                    println!("⚠️ [Lightning] コメントが長すぎるため省略 (最大{}文字)", max_comment_len);
+                }
+            } else {
+                println!("⚠️ [Lightning] 受信者はコメントをサポートしていません");
+            }
+        }
+        
         let invoice_response: LnurlPayInvoiceResponse = self
             .client
             .get(&lnurl_response.callback)
-            .query(&[("amount", amount_msats)])
+            .query(&query_params)
             .send()
             .await
             .context("Invoiceリクエストに失敗")?

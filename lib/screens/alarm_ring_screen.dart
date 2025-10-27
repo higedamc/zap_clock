@@ -135,8 +135,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         return;
       }
       
-      // 送金先を取得（設定がなければデフォルト）
-      final recipientAddress = storage.getDonationRecipient() 
+      // 送金先を取得
+      // 1. アラーム固有の寄付先 → 2. グローバル設定 → 3. デフォルト
+      final recipientAddress = _alarm!.donationRecipient 
+          ?? storage.getDonationRecipient() 
           ?? DonationRecipients.defaultRecipientSync.lightningAddress;
       
       debugPrint('💳 NWC経由で送金を開始します...');
@@ -148,6 +150,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         connectionString: nwcConnection,
         lightningAddress: recipientAddress,
         amountSats: _alarm!.amountSats!,
+        comment: 'donation from ZapClock',
       );
       
       debugPrint('✅ 送金成功: $paymentHash');

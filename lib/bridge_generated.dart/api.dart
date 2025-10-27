@@ -15,8 +15,10 @@ Future<String> payLightningInvoice({
   required String connectionString,
   required String lightningAddress,
   required BigInt amountSats,
+  String? comment,
 }) => RustLib.instance.api.crateApiPayLightningInvoice(
   connectionString: connectionString,
   lightningAddress: lightningAddress,
   amountSats: amountSats,
+  comment: comment,
 );

@@ -74,6 +74,7 @@ abstract class RustLibApi extends BaseApi {
     required String connectionString,
     required String lightningAddress,
     required BigInt amountSats,
+    String? comment,
   });
 
   Future<BigInt> crateApiTestNwcConnection({required String connectionString});
@@ -92,6 +93,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required String connectionString,
     required String lightningAddress,
     required BigInt amountSats,
+    String? comment,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -100,11 +102,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(connectionString, serializer);
           sse_encode_String(lightningAddress, serializer);
           sse_encode_u_64(amountSats, serializer);
+          sse_encode_opt_String(comment, serializer);
           pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_String, decodeErrorData: sse_decode_String),
         constMeta: kCrateApiPayLightningInvoiceConstMeta,
-        argValues: [connectionString, lightningAddress, amountSats],
+        argValues: [connectionString, lightningAddress, amountSats, comment],
         apiImpl: this,
       ),
     );
@@ -112,7 +115,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiPayLightningInvoiceConstMeta => const TaskConstMeta(
     debugName: "pay_lightning_invoice",
-    argNames: ["connectionString", "lightningAddress", "amountSats"],
+    argNames: ["connectionString", "lightningAddress", "amountSats", "comment"],
   );
 
   @override
@@ -148,6 +151,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
   BigInt dco_decode_u_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeU64(raw);
@@ -171,6 +180,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
   }
 
   @protected
@@ -208,6 +228,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
   }
 
   @protected

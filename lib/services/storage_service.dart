@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/alarm.dart';
+import '../models/donation_recipient.dart';
 
 /// ローカルストレージサービス
 /// SharedPreferencesを使用してアラームデータを永続化
@@ -10,6 +11,7 @@ class StorageService {
   static const String _globalNwcConnectionKey = 'global_nwc_connection';
   static const String _hasCompletedOnboardingKey = 'has_completed_onboarding';
   static const String _donationRecipientKey = 'donation_recipient_address';
+  static const String _customRecipientsKey = 'custom_donation_recipients';
   
   final SharedPreferences _prefs;
   
@@ -120,6 +122,55 @@ class StorageService {
   /// 送金先Lightning Addressを保存
   Future<bool> setDonationRecipient(String lightningAddress) async {
     return await _prefs.setString(_donationRecipientKey, lightningAddress);
+  }
+  
+  // === ユーザー定義の寄付先 ===
+  
+  /// ユーザー定義の寄付先リストを取得
+  List<DonationRecipient> getCustomRecipients() {
+    final recipientsJson = _prefs.getString(_customRecipientsKey);
+    if (recipientsJson == null) {
+      return [];
+    }
+    
+    try {
+      final List<dynamic> decoded = json.decode(recipientsJson);
+      return decoded.map((json) => DonationRecipient.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  /// ユーザー定義の寄付先リストを保存
+  Future<bool> saveCustomRecipients(List<DonationRecipient> recipients) async {
+    final recipientsJson = json.encode(
+      recipients.map((r) => r.toJson()).toList(),
+    );
+    return await _prefs.setString(_customRecipientsKey, recipientsJson);
+  }
+  
+  /// ユーザー定義の寄付先を追加
+  Future<bool> addCustomRecipient(DonationRecipient recipient) async {
+    final recipients = getCustomRecipients();
+    
+    // 重複チェック（Lightning Address で判定）
+    final isDuplicate = recipients.any(
+      (r) => r.lightningAddress == recipient.lightningAddress,
+    );
+    
+    if (isDuplicate) {
+      return false; // 重複している場合は追加しない
+    }
+    
+    recipients.add(recipient);
+    return await saveCustomRecipients(recipients);
+  }
+  
+  /// ユーザー定義の寄付先を削除
+  Future<bool> deleteCustomRecipient(String lightningAddress) async {
+    final recipients = getCustomRecipients();
+    recipients.removeWhere((r) => r.lightningAddress == lightningAddress);
+    return await saveCustomRecipients(recipients);
   }
 }
 

@@ -1,0 +1,23 @@
+# 寄付先プリセット一覧
+# このファイルを編集することで、寄付先を追加・変更できます
+# 注意: Lightning Address が有効であることを確認してから追加してください
+
+presets:
+  - name: ZapClock Developer (soggyhack)
+    lightningAddress: soggyhack118@walletofsatoshi.com
+    description: Creator of ZapClock alarm app
+    emoji: ⚡
+
+  - name: Zeus Wallet Developer
+    lightningAddress: 3dd3c0cbd87eba48@coinos.io
+    description: Mobile Lightning wallet development
+    emoji: 📱
+
+  - name: Sparrow Wallet Developer
+    lightningAddress: craigraw@primal.net
+    description: Bitcoin desktop wallet development
+    emoji: 🐦
+
+# デフォルトの送金先インデックス（0始まり）
+default_index: 0
+

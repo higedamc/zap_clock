@@ -32,15 +32,19 @@ pub async fn pay_lightning_invoice(
     connection_string: String,
     lightning_address: String,
     amount_sats: u64,
+    comment: Option<String>,
 ) -> Result<String, String> {
     println!("📞 [API] pay_lightning_invoice 呼び出し");
     println!("   Address: {}", lightning_address);
     println!("   Amount: {} sats", amount_sats);
+    if let Some(ref c) = comment {
+        println!("   Comment: {}", c);
+    }
     
     // LightningアドレスからInvoiceを取得
     let payment = LightningPayment::new();
     let invoice = payment
-        .get_invoice_from_address(&lightning_address, amount_sats)
+        .get_invoice_from_address(&lightning_address, amount_sats, comment)
         .await
         .map_err(|e| {
             println!("❌ [API] Invoice取得に失敗: {}", e);

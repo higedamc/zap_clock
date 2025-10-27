@@ -26,6 +26,9 @@ class Alarm {
   /// この時間が経過すると自動的に送金される
   final int? timeoutSeconds;
   
+  /// 送金先Lightning Address（このアラーム固有の送金先）
+  final String? donationRecipient;
+  
   /// アラーム音源のパス（nullの場合はデフォルト音源を使用）
   final String? soundPath;
   
@@ -41,6 +44,7 @@ class Alarm {
     List<bool>? repeatDays,
     this.amountSats,
     this.timeoutSeconds = 300, // デフォルト5分=300秒
+    this.donationRecipient,
     this.soundPath,
     this.soundName,
   }) : repeatDays = repeatDays ?? List.filled(7, false);
@@ -130,6 +134,7 @@ class Alarm {
       'repeatDays': repeatDays,
       'amountSats': amountSats,
       'timeoutSeconds': timeoutSeconds,
+      'donationRecipient': donationRecipient,
       'soundPath': soundPath,
       'soundName': soundName,
     };
@@ -152,6 +157,7 @@ class Alarm {
       repeatDays: (json['repeatDays'] as List?)?.cast<bool>(),
       amountSats: json['amountSats'] as int?,
       timeoutSeconds: timeoutSecs ?? 300,
+      donationRecipient: json['donationRecipient'] as String?,
       soundPath: json['soundPath'] as String?,
       soundName: json['soundName'] as String?,
     );
@@ -167,6 +173,7 @@ class Alarm {
     List<bool>? repeatDays,
     int? amountSats,
     int? timeoutSeconds,
+    String? donationRecipient,
     String? soundPath,
     String? soundName,
   }) {
@@ -179,6 +186,7 @@ class Alarm {
       repeatDays: repeatDays ?? List.from(this.repeatDays),
       amountSats: amountSats ?? this.amountSats,
       timeoutSeconds: timeoutSeconds ?? this.timeoutSeconds,
+      donationRecipient: donationRecipient ?? this.donationRecipient,
       soundPath: soundPath ?? this.soundPath,
       soundName: soundName ?? this.soundName,
     );

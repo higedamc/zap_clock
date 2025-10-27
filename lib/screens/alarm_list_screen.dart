@@ -208,8 +208,13 @@ class _AlarmListItem extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Consumer(
                           builder: (context, ref, child) {
-                            // 送金先アドレスを監視（設定変更時に自動更新される）
-                            final recipientAddress = ref.watch(donationRecipientProvider);
+                            // 送金先を優先順位で取得
+                            // 1. アラーム固有の寄付先 → 2. グローバル設定 → 3. デフォルト
+                            final storage = ref.watch(storageServiceProvider);
+                            final recipientAddress = alarm.donationRecipient 
+                                ?? ref.watch(donationRecipientProvider)
+                                ?? storage.getDonationRecipient() 
+                                ?? DonationRecipients.defaultRecipientSync.lightningAddress;
                             
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

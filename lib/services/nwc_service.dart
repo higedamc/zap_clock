@@ -36,15 +36,20 @@ class NwcService {
     required String connectionString,
     required String lightningAddress,
     required int amountSats,
+    String? comment,
   }) async {
     try {
       debugPrint('🔄 NWC送金開始: $amountSats sats → $lightningAddress');
+      if (comment != null) {
+        debugPrint('💬 コメント: $comment');
+      }
       
       // Rustブリッジを使用
       final paymentHash = await rust_api.payLightningInvoice(
         connectionString: connectionString,
         lightningAddress: lightningAddress,
         amountSats: BigInt.from(amountSats),
+        comment: comment,
       );
       
       debugPrint('✅ NWC送金成功: $paymentHash');
@@ -60,6 +65,7 @@ class NwcService {
     required String connectionString,
     required String lightningAddress,
     required int amountSats,
+    String? comment,
   }) async {
     try {
       // Rustブリッジを使用
@@ -67,6 +73,7 @@ class NwcService {
         connectionString: connectionString,
         lightningAddress: lightningAddress,
         amountSats: BigInt.from(amountSats),
+        comment: comment,
       );
       return paymentHash;
     } catch (e) {

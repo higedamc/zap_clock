@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart';
+import '../models/donation_recipient.dart';
 import '../providers/alarm_provider.dart';
+import '../providers/storage_provider.dart';
 import '../services/ringtone_service.dart';
 import '../app_theme.dart';
 
@@ -26,6 +28,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   late List<bool> _repeatDays;
   int? _amountSats;
   int? _timeoutSeconds;
+  String? _donationRecipient;
   String? _soundPath;
   String? _soundName;
   Alarm? _originalAlarm;
@@ -83,6 +86,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                   _repeatDays = List.from(_originalAlarm!.repeatDays);
                   _amountSats = _originalAlarm!.amountSats;
                   _timeoutSeconds = _originalAlarm!.timeoutSeconds ?? 300;
+                  _donationRecipient = _originalAlarm!.donationRecipient;
                   _soundPath = _originalAlarm!.soundPath;
                   _soundName = _originalAlarm!.soundName;
                 } catch (e) {
@@ -436,6 +440,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           repeatDays: _repeatDays,
           amountSats: _amountSats,
           timeoutSeconds: _timeoutSeconds ?? 300,
+          donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
         );
@@ -450,6 +455,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           repeatDays: _repeatDays,
           amountSats: _amountSats,
           timeoutSeconds: _timeoutSeconds ?? 300,
+          donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
         );
@@ -610,6 +616,15 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
             ],
           ),
           
+          const SizedBox(height: 16),
+          
+          // 寄付先選択
+          Consumer(
+            builder: (context, ref, child) {
+              return _buildDonationRecipientPicker(ref);
+            },
+          ),
+          
           const SizedBox(height: 12),
           
           // 説明テキスト
@@ -642,6 +657,196 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
         ],
       ),
     );
+  }
+  
+  /// 寄付先選択UI
+  Widget _buildDonationRecipientPicker(WidgetRef ref) {
+    final storage = ref.read(storageServiceProvider);
+    final presets = DonationRecipients.presetsSync;
+    final customRecipients = storage.getCustomRecipients();
+    final allRecipients = [...presets, ...customRecipients];
+    
+    // 選択中の寄付先を取得
+    DonationRecipient? selectedRecipient;
+    if (_donationRecipient != null) {
+      try {
+        selectedRecipient = allRecipients.firstWhere(
+          (r) => r.lightningAddress == _donationRecipient,
+        );
+      } catch (e) {
+        // 見つからない場合はnull
+      }
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.volunteer_activism, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '寄付先',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        InkWell(
+          onTap: () => _selectDonationRecipient(ref),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppTheme.primaryLight),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  selectedRecipient?.emoji ?? '💝',
+                  style: const TextStyle(fontSize: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedRecipient?.name ?? 'デフォルト (タップして選択)',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (selectedRecipient != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          selectedRecipient.description,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          selectedRecipient.lightningAddress,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppTheme.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  /// 寄付先選択ダイアログ
+  Future<void> _selectDonationRecipient(WidgetRef ref) async {
+    final storage = ref.read(storageServiceProvider);
+    final presets = DonationRecipients.presetsSync;
+    final customRecipients = storage.getCustomRecipients();
+    final allRecipients = [...presets, ...customRecipients];
+    
+    final selected = await showDialog<DonationRecipient?>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('寄付先を選択'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: allRecipients.length + 1, // +1 for "なし"オプション
+              itemBuilder: (context, index) {
+                // 最初の項目：「なし」オプション
+                if (index == 0) {
+                  final isSelected = _donationRecipient == null;
+                  return ListTile(
+                    leading: const Text('🚫', style: TextStyle(fontSize: 32)),
+                    title: const Text('デフォルト'),
+                    subtitle: const Text('グローバル設定の寄付先を使用'),
+                    selected: isSelected,
+                    selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
+                    onTap: () => Navigator.of(context).pop(null),
+                  );
+                }
+                
+                final recipient = allRecipients[index - 1];
+                final isSelected = _donationRecipient == recipient.lightningAddress;
+                final isCustom = index - 1 >= presets.length;
+                
+                return ListTile(
+                  leading: Text(
+                    recipient.emoji,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(recipient.name)),
+                      if (isCustom)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(
+                            Icons.star,
+                            size: 16,
+                            color: Colors.amber,
+                          ),
+                        ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(recipient.description),
+                      const SizedBox(height: 4),
+                      Text(
+                        recipient.lightningAddress,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  selected: isSelected,
+                  selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
+                  onTap: () => Navigator.of(context).pop(recipient),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (selected != null) {
+      setState(() {
+        _donationRecipient = selected.lightningAddress;
+      });
+    } else if (selected == null && context.mounted) {
+      // 「なし」が選択された場合
+      setState(() {
+        _donationRecipient = null;
+      });
+    }
   }
   
   /// タイムアウトラベルを取得
