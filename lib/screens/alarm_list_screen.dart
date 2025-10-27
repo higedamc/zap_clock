@@ -208,10 +208,8 @@ class _AlarmListItem extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Consumer(
                           builder: (context, ref, child) {
-                            // 送金先アドレスを取得
-                            final storage = ref.read(storageServiceProvider);
-                            final recipientAddress = storage.getDonationRecipient() ?? 
-                                                    DonationRecipients.defaultRecipient.lightningAddress;
+                            // 送金先アドレスを監視（設定変更時に自動更新される）
+                            final recipientAddress = ref.watch(donationRecipientProvider);
                             
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

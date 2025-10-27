@@ -137,7 +137,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
       
       // 送金先を取得（設定がなければデフォルト）
       final recipientAddress = storage.getDonationRecipient() 
-          ?? DonationRecipients.defaultRecipient.lightningAddress;
+          ?? DonationRecipients.defaultRecipientSync.lightningAddress;
       
       debugPrint('💳 NWC経由で送金を開始します...');
       debugPrint('📍 送金先: $recipientAddress');

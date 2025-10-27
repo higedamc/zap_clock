@@ -13,6 +13,7 @@ import 'screens/settings_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/alarm_service.dart';
 import 'services/nwc_service.dart';
+import 'models/donation_recipient.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -23,6 +24,9 @@ void main() async {
   
   // Rust Bridgeの初期化
   await NwcService.initialize();
+  
+  // 寄付先リストのロード
+  await DonationRecipients.loadFromAssets();
   
   // SharedPreferencesの初期化
   final prefs = await SharedPreferences.getInstance();

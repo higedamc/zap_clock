@@ -60,6 +60,9 @@ dependencies:
   
   # HTTP client
   http: ^1.2.2
+  
+  # YAML parser
+  yaml: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -92,7 +95,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/alarm_sound.mp3
-    - assets/transparent-image.png
+    - assets/icon.png
+    - assets/donation_recipients.yaml
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -124,6 +128,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/transparent-image.png"
+  image_path: "assets/icon.png"
   # adaptive_icon_background: "#FFFFFF"
   # adaptive_icon_foreground: "assets/transparent-image.png"

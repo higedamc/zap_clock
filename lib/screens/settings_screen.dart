@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../l10n/app_localizations.dart';
 import '../models/donation_recipient.dart';
 import '../providers/nwc_provider.dart';
 import '../providers/storage_provider.dart';
+import '../services/permission_service.dart';
 import '../app_theme.dart';
 
 /// NWC/Lightning設定画面
@@ -49,7 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, ref, child) {
           // 初回ロード時に設定を読み込む
           if (!_isLoaded) {
-            _loadSettings(ref);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _loadSettings(ref);
+            });
             _isLoaded = true;
           }
           
@@ -57,6 +61,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 権限管理セクション
+                _buildSectionHeader('権限設定'),
+                _buildPermissionsSection(),
+                
+                const Divider(height: 32),
+                
                 // NWC設定セクション
                 _buildSectionHeader(l10n.nwcTitle),
                 _buildNwcConnectionField(),
@@ -229,6 +239,265 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
   
+  /// 権限管理セクション
+  Widget _buildPermissionsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'アプリが正常に動作するために必要な権限の状態を確認できます。',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // 通知権限
+          FutureBuilder<PermissionStatus>(
+            future: Permission.notification.status,
+            builder: (context, snapshot) {
+              final status = snapshot.data;
+              return _buildPermissionTile(
+                icon: Icons.notifications,
+                title: '通知',
+                description: 'アラーム通知の表示に必要です',
+                status: status,
+                onTap: () => _requestPermission(Permission.notification),
+              );
+            },
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // 正確なアラーム権限
+          FutureBuilder<PermissionStatus>(
+            future: Permission.scheduleExactAlarm.status,
+            builder: (context, snapshot) {
+              final status = snapshot.data;
+              return _buildPermissionTile(
+                icon: Icons.alarm,
+                title: '正確なアラーム',
+                description: '指定した時刻に正確にアラームを鳴らすために必要です',
+                status: status,
+                onTap: () => _requestPermission(Permission.scheduleExactAlarm),
+              );
+            },
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // 音楽ファイルアクセス権限
+          FutureBuilder<PermissionStatus>(
+            future: Permission.audio.status,
+            builder: (context, snapshot) {
+              final status = snapshot.data;
+              return _buildPermissionTile(
+                icon: Icons.music_note,
+                title: '音楽ファイル',
+                description: 'カスタム着信音の選択に必要です',
+                status: status,
+                onTap: () => _requestPermission(Permission.audio),
+              );
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // すべての権限をリクエスト
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _requestAllPermissions,
+              icon: const Icon(Icons.security),
+              label: const Text('すべての権限を確認'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 権限タイル
+  Widget _buildPermissionTile({
+    required IconData icon,
+    required String title,
+    required String description,
+    required PermissionStatus? status,
+    required VoidCallback onTap,
+  }) {
+    final isGranted = status?.isGranted ?? false;
+    final color = isGranted ? AppTheme.successColor : AppTheme.errorColor;
+    final statusText = isGranted ? '許可済み' : '未許可';
+    final statusIcon = isGranted ? Icons.check_circle : Icons.cancel;
+    
+    return InkWell(
+      onTap: isGranted ? null : onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isGranted 
+                ? AppTheme.successColor.withValues(alpha: 0.3)
+                : AppTheme.errorColor.withValues(alpha: 0.3),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              children: [
+                Icon(statusIcon, color: color, size: 20),
+                const SizedBox(height: 4),
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// 個別の権限をリクエスト
+  Future<void> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+    
+    if (!mounted) return;
+    
+    if (status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('権限が許可されました'),
+          backgroundColor: AppTheme.successColor,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else if (status.isPermanentlyDenied) {
+      // 永続的に拒否された場合、設定画面へ誘導
+      final shouldOpen = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('権限が拒否されています'),
+          content: const Text(
+            'この権限は設定から有効にする必要があります。\n設定画面を開きますか？',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('設定を開く'),
+            ),
+          ],
+        ),
+      );
+      
+      if (shouldOpen == true) {
+        await openAppSettings();
+      }
+    }
+    
+    // 画面を再描画
+    setState(() {});
+  }
+  
+  /// すべての権限をリクエスト
+  Future<void> _requestAllPermissions() async {
+    final permissionService = PermissionService();
+    
+    // 権限リクエストダイアログを表示
+    final shouldRequest = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('権限の確認'),
+        content: const Text(
+          'アプリに必要な全ての権限を確認します。\n'
+          '許可されていない権限がある場合、許可をリクエストします。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('確認する'),
+          ),
+        ],
+      ),
+    );
+    
+    if (shouldRequest != true) return;
+    
+    // 権限をリクエスト
+    final results = await permissionService.requestAllPermissions();
+    permissionService.logPermissionSummary(results);
+    
+    if (!mounted) return;
+    
+    // 結果を表示
+    final hasAll = await permissionService.hasAllRequiredPermissions();
+    if (hasAll) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('全ての権限が許可されています'),
+          backgroundColor: AppTheme.successColor,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('一部の権限が許可されませんでした'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    
+    // 画面を再描画
+    setState(() {});
+  }
+  
   Widget _buildInfoSection() {
     final l10n = AppLocalizations.of(context)!;
     
@@ -307,7 +576,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Row(
                 children: [
                   Text(
-                    _selectedRecipient?.emoji ?? DonationRecipients.defaultRecipient.emoji,
+                    _selectedRecipient?.emoji ?? DonationRecipients.defaultRecipientSync.emoji,
                     style: const TextStyle(fontSize: 32),
                   ),
                   const SizedBox(width: 16),
@@ -316,21 +585,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _selectedRecipient?.name ?? DonationRecipients.defaultRecipient.name,
+                          _selectedRecipient?.name ?? DonationRecipients.defaultRecipientSync.name,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _selectedRecipient?.description ?? DonationRecipients.defaultRecipient.description,
+                          _selectedRecipient?.description ?? DonationRecipients.defaultRecipientSync.description,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _selectedRecipient?.lightningAddress ?? DonationRecipients.defaultRecipient.lightningAddress,
+                          _selectedRecipient?.lightningAddress ?? DonationRecipients.defaultRecipientSync.lightningAddress,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.primaryColor,
                             fontFamily: 'monospace',
@@ -366,9 +635,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: DonationRecipients.presets.length,
+              itemCount: DonationRecipients.presetsSync.length,
               itemBuilder: (context, index) {
-                final recipient = DonationRecipients.presets[index];
+                final recipient = DonationRecipients.presetsSync[index];
                 final isSelected = _selectedRecipient?.lightningAddress == recipient.lightningAddress;
                 
                 return ListTile(
@@ -417,7 +686,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
   
   /// 設定を読み込む
-  void _loadSettings(WidgetRef ref) {
+  Future<void> _loadSettings(WidgetRef ref) async {
     final storage = ref.read(storageServiceProvider);
     
     final nwcConnection = storage.getGlobalNwcConnection();
@@ -428,9 +697,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // 送金先を読み込む
     final recipientAddress = storage.getDonationRecipient();
     if (recipientAddress != null) {
-      _selectedRecipient = DonationRecipients.findByAddress(recipientAddress);
+      _selectedRecipient = await DonationRecipients.findByAddress(recipientAddress);
     }
-    _selectedRecipient ??= DonationRecipients.defaultRecipient;
+    _selectedRecipient ??= DonationRecipients.defaultRecipientSync;
   }
   
   /// 設定を保存
@@ -460,6 +729,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // 送金先を保存
     if (_selectedRecipient != null) {
       await storage.setDonationRecipient(_selectedRecipient!.lightningAddress);
+      // 寄付先Providerも更新（アラーム一覧画面のカード表記を更新するため）
+      ref.read(donationRecipientProvider.notifier).state = _selectedRecipient!.lightningAddress;
     }
     
     if (!mounted) return;

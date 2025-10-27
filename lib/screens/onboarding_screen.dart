@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../app_theme.dart';
 import '../providers/storage_provider.dart';
+import '../services/permission_service.dart';
 
 /// オンボーディング画面
 /// 初回起動時にアプリの使い方を説明
@@ -35,7 +36,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await storage.setOnboardingCompleted();
     
     if (!context.mounted) return;
+    
+    // オンボーディング完了後に権限をリクエスト
+    await _requestPermissions(context);
+    
+    if (!context.mounted) return;
     context.go('/');
+  }
+  
+  /// 権限リクエストを実行
+  Future<void> _requestPermissions(BuildContext context) async {
+    final permissionService = PermissionService();
+    
+    // 権限リクエストダイアログを表示
+    if (!context.mounted) return;
+    
+    final shouldRequest = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('必要な権限の許可'),
+        content: const Text(
+          'ZapClockが正しく動作するために、以下の権限が必要です：\n\n'
+          '• 通知の表示\n'
+          '• 正確なアラームの設定\n'
+          '• 音楽ファイルへのアクセス\n\n'
+          '次の画面で全ての権限を「許可」してください。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    
+    if (shouldRequest != true) return;
+    
+    // 権限をリクエスト
+    final results = await permissionService.requestAllPermissions();
+    permissionService.logPermissionSummary(results);
+    
+    // 権限が拒否された場合、ユーザーに通知
+    if (!context.mounted) return;
+    final hasAll = await permissionService.hasAllRequiredPermissions();
+    if (!hasAll) {
+      if (!context.mounted) return;
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('権限が不足しています'),
+          content: const Text(
+            '一部の権限が許可されませんでした。\n\n'
+            'アプリが正常に動作しない可能性があります。\n'
+            '設定から権限を有効にすることをお勧めします。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
