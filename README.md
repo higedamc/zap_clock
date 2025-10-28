@@ -252,6 +252,67 @@ fvm flutter test integration_test/
 
 ---
 
+## 🔍 Debugging & Logging
+
+### Rust Log Level Configuration
+
+The Rust backend uses the `tracing` framework for structured logging. You can control log levels using the `RUST_LOG` environment variable.
+
+#### Log Levels
+- `error` - Only error messages
+- `warn` - Warnings and errors
+- `info` - Informational messages (default)
+- `debug` - Debug messages
+- `trace` - Detailed trace information
+
+#### Setting Log Levels
+
+**All modules at debug level:**
+```bash
+RUST_LOG=debug fvm flutter run
+```
+
+**App-specific trace level:**
+```bash
+RUST_LOG=zap_clock=trace fvm flutter run
+```
+
+**Multiple module configuration:**
+```bash
+RUST_LOG=zap_clock=trace,nostr_sdk=info,nwc=debug fvm flutter run
+```
+
+**For Android builds:**
+```bash
+# Debug build with verbose logging
+RUST_LOG=trace fvm flutter build apk --debug
+
+# View logs in logcat
+adb logcat | grep zap_clock
+```
+
+#### Log Output Details
+
+The logging system provides:
+- ✅ Structured log output (JSON format support)
+- ✅ Timestamp with microsecond precision
+- ✅ Module/target information
+- ✅ Thread ID and name
+- ✅ File name and line number
+- ✅ Color-coded output (non-Android)
+- ✅ Android Logcat integration
+- ✅ Performance tracing support
+
+#### Example Output
+
+```
+2024-10-28T10:30:45.123456Z INFO zap_clock::nwc: NWC client initialized connection_string="nostr+walletconnect://..."
+2024-10-28T10:30:45.234567Z DEBUG zap_clock::lightning: Resolving Lightning address lightning_address="user@getalby.com"
+2024-10-28T10:30:46.345678Z TRACE zap_clock::lightning: Fetching invoice amount_sats=1000
+```
+
+---
+
 ## 🐛 Known Issues
 
 - Currently, the Rust bridge has not been generated, so Lightning payment functionality operates with mock implementation
