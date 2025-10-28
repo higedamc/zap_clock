@@ -55,3 +55,6 @@
     public <methods>;
 }
 
+# PlayStore (we don't use dynamic feature delivery)
+-dontwarn com.google.android.play.core.**
+
