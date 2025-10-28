@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart';
 import '../models/donation_recipient.dart';
+import '../models/penalty_preset.dart';
 import '../providers/alarm_provider.dart';
 import '../providers/storage_provider.dart';
 import '../services/ringtone_service.dart';
@@ -34,8 +35,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   Alarm? _originalAlarm;
   final _ringtoneService = RingtoneService();
   
-  // タイムアウトのプリセット（秒単位）
-  static const List<int> _timeoutPresets = [15, 30, 60, 300, 600, 900];
+  // 選択中のプリセット（nullの場合は「送金設定なし」）
+  PenaltyPreset? _selectedPreset;
+  // カスタム設定が選択されているか
+  bool _isCustom = false;
   
   @override
   void initState() {
@@ -47,7 +50,9 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     _isEnabled = true;
     _label = '';
     _repeatDays = List.filled(7, false);
-    _timeoutSeconds = 300; // デフォルト5分=300秒
+    // デフォルトは「送金設定なし」
+    _selectedPreset = null;
+    _isCustom = false;
   }
 
   @override
@@ -89,6 +94,23 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                   _donationRecipient = _originalAlarm!.donationRecipient;
                   _soundPath = _originalAlarm!.soundPath;
                   _soundName = _originalAlarm!.soundName;
+                  
+                  // プリセットを検出（マイグレーション）
+                  if (_amountSats != null && _timeoutSeconds != null) {
+                    final matchedPreset = PenaltyPreset.findClosestPreset(_timeoutSeconds, _amountSats);
+                    if (matchedPreset != null) {
+                      _selectedPreset = matchedPreset;
+                      _isCustom = false;
+                    } else {
+                      // カスタム設定として扱う
+                      _selectedPreset = null;
+                      _isCustom = true;
+                    }
+                  } else {
+                    // 送金設定なし
+                    _selectedPreset = null;
+                    _isCustom = false;
+                  }
                 } catch (e) {
                   // アラームが見つからない場合
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,9 +124,12 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
               return _buildForm(context, ref);
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => Center(
-              child: Text('エラーが発生しました: $error'),
-            ),
+            error: (error, stack) {
+              final l10n = AppLocalizations.of(context)!;
+              return Center(
+                child: Text('${l10n.errorOccurred}: $error'),
+              );
+            },
           );
         },
       ),
@@ -428,6 +453,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   /// アラームを保存
   Future<void> _saveAlarm(BuildContext context, WidgetRef ref) async {
     try {
+      // 送金設定がある場合は、amountSatsとtimeoutSecondsが必須
+      final finalAmountSats = (_selectedPreset != null || _isCustom) ? _amountSats : null;
+      final finalTimeoutSeconds = (_selectedPreset != null || _isCustom) ? _timeoutSeconds : null;
+      
       if (widget.alarmId == null) {
         // 新規作成
         final newId = await ref.read(alarmListProvider.notifier).getNextAlarmId();
@@ -438,8 +467,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           isEnabled: _isEnabled,
           label: _label,
           repeatDays: _repeatDays,
-          amountSats: _amountSats,
-          timeoutSeconds: _timeoutSeconds ?? 300,
+          amountSats: finalAmountSats,
+          timeoutSeconds: finalTimeoutSeconds,
           donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
@@ -453,8 +482,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           isEnabled: _isEnabled,
           label: _label,
           repeatDays: _repeatDays,
-          amountSats: _amountSats,
-          timeoutSeconds: _timeoutSeconds ?? 300,
+          amountSats: finalAmountSats,
+          timeoutSeconds: finalTimeoutSeconds,
           donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
@@ -467,9 +496,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
       }
     } catch (e) {
       if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text('${l10n.errorOccurred}: $e'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -537,95 +567,89 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// Lightning設定フィールド
+  /// Lightning設定フィールド（新UI: プリセット選択）
   Widget _buildLightningSettings() {
     final l10n = AppLocalizations.of(context)!;
     
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 送金額
-          TextField(
-            controller: TextEditingController(
-              text: _amountSats?.toString() ?? '',
-            )..selection = TextSelection.collapsed(
-                offset: _amountSats?.toString().length ?? 0,
-              ),
-            decoration: InputDecoration(
-              labelText: l10n.amount,
-              hintText: l10n.amountHint,
-              prefixIcon: const Icon(Icons.monetization_on),
-              suffixText: 'sats',
+          // セクションタイトル
+          Text(
+            l10n.penaltyPresetTitle,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              setState(() {
-                _amountSats = value.isEmpty ? null : int.tryParse(value);
-              });
-            },
           ),
-          
+          const SizedBox(height: 8),
+          Text(
+            l10n.penaltyPresetDescription,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppTheme.textSecondary,
+            ),
+          ),
           const SizedBox(height: 16),
           
-          // タイムアウト時間選択
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // プリセット選択チップ
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.timer, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.autoPaymentTime,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ],
+              // 「送金設定なし」オプション
+              _buildPresetChip(
+                label: l10n.noPenalty,
+                emoji: '🚫',
+                isSelected: _selectedPreset == null && !_isCustom,
+                onTap: () {
+                  setState(() {
+                    _selectedPreset = null;
+                    _isCustom = false;
+                    _amountSats = null;
+                    _timeoutSeconds = null;
+                  });
+                },
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _timeoutPresets.map((seconds) {
-                  final isSelected = _timeoutSeconds == seconds;
-                  return ChoiceChip(
-                    label: Text(_getTimeoutLabel(l10n, seconds)),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        setState(() {
-                          _timeoutSeconds = seconds;
-                        });
-                      }
-                    },
-                    selectedColor: AppTheme.primaryColor,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppTheme.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.timeoutDescription,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
+              
+              // 各プリセット
+              ...PenaltyPreset.presets.map((preset) {
+                return _buildPresetChip(
+                  label: _getPresetLabel(l10n, preset),
+                  emoji: preset.emoji,
+                  isSelected: _selectedPreset == preset && !_isCustom,
+                  onTap: () {
+                    setState(() {
+                      _selectedPreset = preset;
+                      _isCustom = false;
+                      _amountSats = preset.amountSats;
+                      _timeoutSeconds = preset.timeoutSeconds;
+                    });
+                  },
+                );
+              }),
+              
+              // カスタムオプション
+              _buildPresetChip(
+                label: l10n.penaltyPresetCustom,
+                emoji: '⚙️',
+                isSelected: _isCustom,
+                onTap: () => _showCustomSettingsDialog(),
               ),
             ],
           ),
           
           const SizedBox(height: 16),
           
-          // 寄付先選択
-          Consumer(
-            builder: (context, ref, child) {
-              return _buildDonationRecipientPicker(ref);
-            },
-          ),
-          
-          const SizedBox(height: 12),
+          // 寄付先選択（送金設定がある場合のみ表示）
+          if (_selectedPreset != null || _isCustom) ...[
+            Consumer(
+              builder: (context, ref, child) {
+                return _buildDonationRecipientPicker(ref);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
           
           // 説明テキスト
           Container(
@@ -645,7 +669,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.lightningSettingsDescription,
+                    _getSelectedDescription(l10n),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.textSecondary,
                     ),
@@ -657,6 +681,181 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
         ],
       ),
     );
+  }
+  
+  /// プリセットチップを構築
+  Widget _buildPresetChip({
+    required String label,
+    required String emoji,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// プリセットのラベルを取得
+  String _getPresetLabel(AppLocalizations l10n, PenaltyPreset preset) {
+    switch (preset.nameKey) {
+      case 'penaltyPreset15s':
+        return l10n.penaltyPreset15s;
+      case 'penaltyPreset30s':
+        return l10n.penaltyPreset30s;
+      case 'penaltyPreset1m':
+        return l10n.penaltyPreset1m;
+      case 'penaltyPreset5m':
+        return l10n.penaltyPreset5m;
+      case 'penaltyPreset10m':
+        return l10n.penaltyPreset10m;
+      case 'penaltyPreset15m':
+        return l10n.penaltyPreset15m;
+      default:
+        return preset.nameKey;
+    }
+  }
+  
+  /// 選択中の設定の説明を取得
+  String _getSelectedDescription(AppLocalizations l10n) {
+    if (_selectedPreset == null && !_isCustom) {
+      return l10n.noPenaltyDescription;
+    } else if (_isCustom) {
+      final timeoutStr = _getTimeoutLabel(l10n, _timeoutSeconds ?? 300);
+      return '${l10n.customPenaltySettings}: $timeoutStr / ${_amountSats ?? 0} sats';
+    } else if (_selectedPreset != null) {
+      return l10n.lightningSettingsDescription;
+    }
+    return '';
+  }
+  
+  /// カスタム設定ダイアログを表示
+  Future<void> _showCustomSettingsDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final timeoutController = TextEditingController(
+      text: _timeoutSeconds?.toString() ?? '300',
+    );
+    final amountController = TextEditingController(
+      text: _amountSats?.toString() ?? '100',
+    );
+    
+    final result = await showDialog<Map<String, int>?>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.customPenaltySettings),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.customPenaltyDescription,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // タイムアウト入力
+                TextField(
+                  controller: timeoutController,
+                  decoration: InputDecoration(
+                    labelText: l10n.autoPaymentTime,
+                    hintText: '300',
+                    prefixIcon: const Icon(Icons.timer),
+                    suffixText: '秒',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                
+                // 送金額入力
+                TextField(
+                  controller: amountController,
+                  decoration: InputDecoration(
+                    labelText: l10n.amount,
+                    hintText: '100',
+                    prefixIcon: const Icon(Icons.monetization_on),
+                    suffixText: 'sats',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final timeout = int.tryParse(timeoutController.text);
+                final amount = int.tryParse(amountController.text);
+                
+                if (timeout == null || amount == null || timeout <= 0 || amount <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('正しい数値を入力してください'),
+                      backgroundColor: AppTheme.errorColor,
+                    ),
+                  );
+                  return;
+                }
+                
+                Navigator.of(context).pop({
+                  'timeout': timeout,
+                  'amount': amount,
+                });
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (result != null) {
+      setState(() {
+        _isCustom = true;
+        _selectedPreset = null;
+        _timeoutSeconds = result['timeout'];
+        _amountSats = result['amount'];
+      });
+    }
+    
+    timeoutController.dispose();
+    amountController.dispose();
   }
   
   /// 寄付先選択UI
@@ -686,7 +885,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
             const Icon(Icons.volunteer_activism, size: 20),
             const SizedBox(width: 8),
             Text(
-              '寄付先',
+              AppLocalizations.of(context)!.donationRecipientTitle,
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ],
@@ -713,7 +912,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        selectedRecipient?.name ?? 'デフォルト (タップして選択)',
+                        selectedRecipient?.name ?? AppLocalizations.of(context)!.defaultTapToSelect,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -753,6 +952,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   
   /// 寄付先選択ダイアログ
   Future<void> _selectDonationRecipient(WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final storage = ref.read(storageServiceProvider);
     final presets = DonationRecipients.presetsSync;
     final customRecipients = storage.getCustomRecipients();
@@ -762,7 +962,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('寄付先を選択'),
+          title: Text(l10n.selectDonationRecipient),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -774,8 +974,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                   final isSelected = _donationRecipient == null;
                   return ListTile(
                     leading: const Text('🚫', style: TextStyle(fontSize: 32)),
-                    title: const Text('デフォルト'),
-                    subtitle: const Text('グローバル設定の寄付先を使用'),
+                    title: Text(l10n.defaultRecipient),
+                    subtitle: Text(l10n.useGlobalSetting),
                     selected: isSelected,
                     selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
                     onTap: () => Navigator.of(context).pop(null),
@@ -830,7 +1030,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancel),
             ),
           ],
         );
