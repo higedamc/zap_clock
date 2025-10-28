@@ -277,4 +277,189 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingDescription4 =>
       'Let\'s start living a\nmore regular life with ZapClock!';
+
+  @override
+  String get onceOnly => 'Once only';
+
+  @override
+  String get everyday => 'Every day';
+
+  @override
+  String get weekdays => 'Weekdays';
+
+  @override
+  String get weekend => 'Weekend';
+
+  @override
+  String get donationRecipientTitle => 'Donation Recipient';
+
+  @override
+  String get selectDonationRecipient => 'Select Recipient';
+
+  @override
+  String get defaultRecipient => 'Default';
+
+  @override
+  String get useGlobalSetting => 'Use global setting';
+
+  @override
+  String get defaultTapToSelect => 'Default (tap to select)';
+
+  @override
+  String get permissionsSettings => 'Permissions Settings';
+
+  @override
+  String get permissionsDescription =>
+      'You can check the status of permissions required for the app to function properly.';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get notificationDescription =>
+      'Required to display alarm notifications';
+
+  @override
+  String get exactAlarm => 'Exact Alarm';
+
+  @override
+  String get exactAlarmDescription =>
+      'Required to ring the alarm at the exact specified time';
+
+  @override
+  String get mediaAccess => 'Media Access';
+
+  @override
+  String get mediaAccessDescription => 'Required to select custom ringtones';
+
+  @override
+  String get checkAllPermissions => 'Check all permissions';
+
+  @override
+  String get permitted => 'Permitted';
+
+  @override
+  String get notPermitted => 'Not permitted';
+
+  @override
+  String get permissionGranted => 'Permission granted';
+
+  @override
+  String get permissionDenied => 'Permission denied';
+
+  @override
+  String get permissionDeniedMessage =>
+      'This permission needs to be enabled from settings.\nWould you like to open settings?';
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String get checkPermissions => 'Check Permissions';
+
+  @override
+  String get checkPermissionsMessage =>
+      'Check all permissions required for the app.\nIf any permissions are not granted, you will be prompted to grant them.';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get allPermissionsGranted => 'All permissions granted';
+
+  @override
+  String get somePermissionsDenied => 'Some permissions were not granted';
+
+  @override
+  String get defaultDonationRecipientDescription =>
+      'Used as the default donation recipient when creating alarms';
+
+  @override
+  String get addCustomRecipient => 'Add custom recipient';
+
+  @override
+  String get deleteConfirmation => 'Delete Confirmation';
+
+  @override
+  String get selectEmoji => 'Select emoji';
+
+  @override
+  String get nameRequired => 'Name *';
+
+  @override
+  String get nameHintExample => 'e.g., Bitcoin Magazine';
+
+  @override
+  String get addressHintExample => 'e.g., tips@bitcoin.com';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get descriptionHintExample => 'e.g., Bitcoin news and education';
+
+  @override
+  String get nameAndAddressRequired =>
+      'Name and Lightning Address are required';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get addressAlreadyExists =>
+      'This Lightning Address is already registered';
+
+  @override
+  String get requestPermissions => 'Request Permissions';
+
+  @override
+  String get grantNextPermissions =>
+      'Please grant all permissions on the next screen.';
+
+  @override
+  String get permissionsInsufficient => 'Insufficient Permissions';
+
+  @override
+  String get permissionsInsufficientMessage =>
+      'Some permissions were not granted.\n\nThe app may not function properly.\nWe recommend enabling permissions from settings.';
+
+  @override
+  String get penaltyPresetTitle => 'Penalty Settings';
+
+  @override
+  String get penaltyPresetDescription => 'Choose a timeout and amount preset';
+
+  @override
+  String get penaltyPreset15s => '⚡ 15s / 21 sats';
+
+  @override
+  String get penaltyPreset30s => '🔥 30s / 42 sats';
+
+  @override
+  String get penaltyPreset1m => '💪 1min / 100 sats';
+
+  @override
+  String get penaltyPreset5m => '😴 5min / 500 sats';
+
+  @override
+  String get penaltyPreset10m => '😱 10min / 1,000 sats';
+
+  @override
+  String get penaltyPreset15m => '💀 15min / 2,100 sats';
+
+  @override
+  String get penaltyPresetCustom => '⚙️ Custom';
+
+  @override
+  String get customPenaltySettings => 'Custom Settings';
+
+  @override
+  String get customPenaltyDescription => 'Set timeout and amount individually';
+
+  @override
+  String get noPenalty => 'No payment';
+
+  @override
+  String get noPenaltyDescription =>
+      'No payment will be sent when alarm is stopped';
 }

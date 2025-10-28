@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 権限管理セクション
-                _buildSectionHeader('権限設定'),
+                _buildSectionHeader(l10n.permissionsSettings),
                 _buildPermissionsSection(),
                 
                 const Divider(height: 32),
@@ -241,13 +241,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   /// 権限管理セクション
   Widget _buildPermissionsSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'アプリが正常に動作するために必要な権限の状態を確認できます。',
+            l10n.permissionsDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.textSecondary,
             ),
@@ -261,8 +263,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final status = snapshot.data;
               return _buildPermissionTile(
                 icon: Icons.notifications,
-                title: '通知',
-                description: 'アラーム通知の表示に必要です',
+                title: l10n.notification,
+                description: l10n.notificationDescription,
                 status: status,
                 onTap: () => _requestPermission(Permission.notification),
               );
@@ -278,8 +280,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final status = snapshot.data;
               return _buildPermissionTile(
                 icon: Icons.alarm,
-                title: '正確なアラーム',
-                description: '指定した時刻に正確にアラームを鳴らすために必要です',
+                title: l10n.exactAlarm,
+                description: l10n.exactAlarmDescription,
                 status: status,
                 onTap: () => _requestPermission(Permission.scheduleExactAlarm),
               );
@@ -295,8 +297,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final status = snapshot.data;
               return _buildPermissionTile(
                 icon: Icons.music_note,
-                title: '音楽ファイル',
-                description: 'カスタム着信音の選択に必要です',
+                title: l10n.mediaAccess,
+                description: l10n.mediaAccessDescription,
                 status: status,
                 onTap: () => _requestPermission(Permission.audio),
               );
@@ -311,7 +313,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ElevatedButton.icon(
               onPressed: _requestAllPermissions,
               icon: const Icon(Icons.security),
-              label: const Text('すべての権限を確認'),
+              label: Text(l10n.checkAllPermissions),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
@@ -332,9 +334,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required PermissionStatus? status,
     required VoidCallback onTap,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final isGranted = status?.isGranted ?? false;
     final color = isGranted ? AppTheme.successColor : AppTheme.errorColor;
-    final statusText = isGranted ? '許可済み' : '未許可';
+    final statusText = isGranted ? l10n.permitted : l10n.notPermitted;
     final statusIcon = isGranted ? Icons.check_circle : Icons.cancel;
     
     return InkWell(
@@ -397,16 +400,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   /// 個別の権限をリクエスト
   Future<void> _requestPermission(Permission permission) async {
+    final l10n = AppLocalizations.of(context)!;
     final status = await permission.request();
     
     if (!mounted) return;
     
     if (status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('権限が許可されました'),
+        SnackBar(
+          content: Text(l10n.permissionGranted),
           backgroundColor: AppTheme.successColor,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     } else if (status.isPermanentlyDenied) {
@@ -414,18 +418,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final shouldOpen = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('権限が拒否されています'),
-          content: const Text(
-            'この権限は設定から有効にする必要があります。\n設定画面を開きますか？',
-          ),
+          title: Text(l10n.permissionDenied),
+          content: Text(l10n.permissionDeniedMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('設定を開く'),
+              child: Text(l10n.openSettings),
             ),
           ],
         ),
@@ -442,25 +444,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   /// すべての権限をリクエスト
   Future<void> _requestAllPermissions() async {
+    final l10n = AppLocalizations.of(context)!;
     final permissionService = PermissionService();
     
     // 権限リクエストダイアログを表示
     final shouldRequest = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('権限の確認'),
-        content: const Text(
-          'アプリに必要な全ての権限を確認します。\n'
-          '許可されていない権限がある場合、許可をリクエストします。',
-        ),
+        title: Text(l10n.checkPermissions),
+        content: Text(l10n.checkPermissionsMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('確認する'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -478,18 +478,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final hasAll = await permissionService.hasAllRequiredPermissions();
     if (hasAll) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('全ての権限が許可されています'),
+        SnackBar(
+          content: Text(l10n.allPermissionsGranted),
           backgroundColor: AppTheme.successColor,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('一部の権限が許可されませんでした'),
+        SnackBar(
+          content: Text(l10n.somePermissionsDenied),
           backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -558,7 +558,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'アラーム作成時のデフォルト寄付先として使用されます',
+            l10n.defaultDonationRecipientDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.textSecondary,
             ),
@@ -627,7 +627,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => _addCustomRecipient(ref),
                   icon: const Icon(Icons.add),
-                  label: const Text('カスタム寄付先を追加'),
+                  label: Text(l10n.addCustomRecipient),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
@@ -709,19 +709,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 final shouldDelete = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('削除確認'),
+                                    title: Text(l10n.deleteConfirmation),
                                     content: Text('「${recipient.name}」を削除しますか？'),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context, false),
-                                        child: const Text('キャンセル'),
+                                        child: Text(l10n.cancel),
                                       ),
                                       TextButton(
                                         onPressed: () => Navigator.pop(context, true),
                                         style: TextButton.styleFrom(
                                           foregroundColor: AppTheme.errorColor,
                                         ),
-                                        child: const Text('削除'),
+                                        child: Text(l10n.delete),
                                       ),
                                     ],
                                   ),
@@ -767,6 +767,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   /// カスタム寄付先を追加
   Future<void> _addCustomRecipient(WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final nameController = TextEditingController();
     final addressController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -780,16 +781,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('カスタム寄付先を追加'),
+              title: Text(l10n.addCustomRecipient),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 絵文字選択
-                    const Text(
-                      '絵文字を選択',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.selectEmoji,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -824,9 +825,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // 名前入力
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: '名前 *',
-                        hintText: '例: Bitcoin Magazine',
+                      decoration: InputDecoration(
+                        labelText: l10n.nameRequired,
+                        hintText: l10n.nameHintExample,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -834,9 +835,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // Lightning Address 入力
                     TextField(
                       controller: addressController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Lightning Address *',
-                        hintText: '例: tips@bitcoin.com',
+                        hintText: l10n.addressHintExample,
                       ),
                       keyboardType: TextInputType.emailAddress,
                     ),
@@ -845,9 +846,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // 説明入力
                     TextField(
                       controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: '説明',
-                        hintText: '例: Bitcoin news and education',
+                      decoration: InputDecoration(
+                        labelText: l10n.description,
+                        hintText: l10n.descriptionHintExample,
                       ),
                       maxLines: 2,
                     ),
@@ -857,7 +858,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('キャンセル'),
+                  child: Text(l10n.cancel),
                 ),
                 TextButton(
                   onPressed: () {
@@ -867,8 +868,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     
                     if (name.isEmpty || address.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('名前とLightning Addressは必須です'),
+                        SnackBar(
+                          content: Text(l10n.nameAndAddressRequired),
                           backgroundColor: AppTheme.errorColor,
                         ),
                       );
@@ -895,7 +896,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     
                     Navigator.of(context).pop(recipient);
                   },
-                  child: const Text('追加'),
+                  child: Text(l10n.add),
                 ),
               ],
             );
@@ -919,8 +920,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('この Lightning Address は既に登録されています'),
+          SnackBar(
+            content: Text(l10n.addressAlreadyExists),
             backgroundColor: Colors.orange,
           ),
         );

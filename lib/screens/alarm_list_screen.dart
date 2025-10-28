@@ -182,25 +182,30 @@ class _AlarmListItem extends StatelessWidget {
                       ),
                     const SizedBox(height: 4),
                     // 繰り返し設定
-                    Row(
-                      children: [
-                        Icon(
-                          alarm.hasRepeat ? Icons.repeat : Icons.calendar_today,
-                          size: 16,
-                          color: alarm.isEnabled 
-                              ? AppTheme.textSecondary 
-                              : AppTheme.textHint,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          alarm.repeatDaysString,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: alarm.isEnabled 
-                                ? AppTheme.textSecondary 
-                                : AppTheme.textHint,
-                          ),
-                        ),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return Row(
+                          children: [
+                            Icon(
+                              alarm.hasRepeat ? Icons.repeat : Icons.calendar_today,
+                              size: 16,
+                              color: alarm.isEnabled 
+                                  ? AppTheme.textSecondary 
+                                  : AppTheme.textHint,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              alarm.getRepeatDaysString(l10n),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: alarm.isEnabled 
+                                    ? AppTheme.textSecondary 
+                                    : AppTheme.textHint,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     // Lightning設定
                     if (alarm.amountSats != null)

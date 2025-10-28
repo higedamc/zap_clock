@@ -439,6 +439,296 @@
   "onboardingDescription4": "Let's start living a\nmore regular life with ZapClock!",
   "@onboardingDescription4": {
     "description": "Onboarding page 4 description"
+  },
+  
+  "onceOnly": "Once only",
+  "@onceOnly": {
+    "description": "Repeat option for one-time alarm"
+  },
+  
+  "everyday": "Every day",
+  "@everyday": {
+    "description": "Repeat option for daily alarm"
+  },
+  
+  "weekdays": "Weekdays",
+  "@weekdays": {
+    "description": "Repeat option for weekdays"
+  },
+  
+  "weekend": "Weekend",
+  "@weekend": {
+    "description": "Repeat option for weekend"
+  },
+  
+  "donationRecipientTitle": "Donation Recipient",
+  "@donationRecipientTitle": {
+    "description": "Title for donation recipient field"
+  },
+  
+  "selectDonationRecipient": "Select Recipient",
+  "@selectDonationRecipient": {
+    "description": "Dialog title for selecting donation recipient"
+  },
+  
+  "defaultRecipient": "Default",
+  "@defaultRecipient": {
+    "description": "Default recipient option"
+  },
+  
+  "useGlobalSetting": "Use global setting",
+  "@useGlobalSetting": {
+    "description": "Description for using global donation recipient setting"
+  },
+  
+  "defaultTapToSelect": "Default (tap to select)",
+  "@defaultTapToSelect": {
+    "description": "Placeholder text for donation recipient when not selected"
+  },
+  
+  "permissionsSettings": "Permissions Settings",
+  "@permissionsSettings": {
+    "description": "Permissions settings section title"
+  },
+  
+  "permissionsDescription": "You can check the status of permissions required for the app to function properly.",
+  "@permissionsDescription": {
+    "description": "Permissions section description"
+  },
+  
+  "notification": "Notification",
+  "@notification": {
+    "description": "Notification permission name"
+  },
+  
+  "notificationDescription": "Required to display alarm notifications",
+  "@notificationDescription": {
+    "description": "Notification permission description"
+  },
+  
+  "exactAlarm": "Exact Alarm",
+  "@exactAlarm": {
+    "description": "Exact alarm permission name"
+  },
+  
+  "exactAlarmDescription": "Required to ring the alarm at the exact specified time",
+  "@exactAlarmDescription": {
+    "description": "Exact alarm permission description"
+  },
+  
+  "mediaAccess": "Media Access",
+  "@mediaAccess": {
+    "description": "Media access permission name"
+  },
+  
+  "mediaAccessDescription": "Required to select custom ringtones",
+  "@mediaAccessDescription": {
+    "description": "Media access permission description"
+  },
+  
+  "checkAllPermissions": "Check all permissions",
+  "@checkAllPermissions": {
+    "description": "Button text to check all permissions"
+  },
+  
+  "permitted": "Permitted",
+  "@permitted": {
+    "description": "Status text when permission is granted"
+  },
+  
+  "notPermitted": "Not permitted",
+  "@notPermitted": {
+    "description": "Status text when permission is denied"
+  },
+  
+  "permissionGranted": "Permission granted",
+  "@permissionGranted": {
+    "description": "Success message when permission is granted"
+  },
+  
+  "permissionDenied": "Permission denied",
+  "@permissionDenied": {
+    "description": "Dialog title when permission is denied"
+  },
+  
+  "permissionDeniedMessage": "This permission needs to be enabled from settings.\nWould you like to open settings?",
+  "@permissionDeniedMessage": {
+    "description": "Message when permission is permanently denied"
+  },
+  
+  "openSettings": "Open settings",
+  "@openSettings": {
+    "description": "Button text to open system settings"
+  },
+  
+  "checkPermissions": "Check Permissions",
+  "@checkPermissions": {
+    "description": "Dialog title for checking permissions"
+  },
+  
+  "checkPermissionsMessage": "Check all permissions required for the app.\nIf any permissions are not granted, you will be prompted to grant them.",
+  "@checkPermissionsMessage": {
+    "description": "Message explaining permission check"
+  },
+  
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button text"
+  },
+  
+  "allPermissionsGranted": "All permissions granted",
+  "@allPermissionsGranted": {
+    "description": "Success message when all permissions are granted"
+  },
+  
+  "somePermissionsDenied": "Some permissions were not granted",
+  "@somePermissionsDenied": {
+    "description": "Warning message when some permissions are denied"
+  },
+  
+  "defaultDonationRecipientDescription": "Used as the default donation recipient when creating alarms",
+  "@defaultDonationRecipientDescription": {
+    "description": "Description for default donation recipient setting"
+  },
+  
+  "addCustomRecipient": "Add custom recipient",
+  "@addCustomRecipient": {
+    "description": "Button text to add custom donation recipient"
+  },
+  
+  "deleteConfirmation": "Delete Confirmation",
+  "@deleteConfirmation": {
+    "description": "Dialog title for delete confirmation"
+  },
+  
+  "selectEmoji": "Select emoji",
+  "@selectEmoji": {
+    "description": "Label for emoji selection"
+  },
+  
+  "nameRequired": "Name *",
+  "@nameRequired": {
+    "description": "Required name field label"
+  },
+  
+  "nameHintExample": "e.g., Bitcoin Magazine",
+  "@nameHintExample": {
+    "description": "Hint text example for name field"
+  },
+  
+  "addressHintExample": "e.g., tips@bitcoin.com",
+  "@addressHintExample": {
+    "description": "Hint text example for address field"
+  },
+  
+  "description": "Description",
+  "@description": {
+    "description": "Description field label"
+  },
+  
+  "descriptionHintExample": "e.g., Bitcoin news and education",
+  "@descriptionHintExample": {
+    "description": "Hint text example for description field"
+  },
+  
+  "nameAndAddressRequired": "Name and Lightning Address are required",
+  "@nameAndAddressRequired": {
+    "description": "Error message when required fields are empty"
+  },
+  
+  "add": "Add",
+  "@add": {
+    "description": "Add button text"
+  },
+  
+  "addressAlreadyExists": "This Lightning Address is already registered",
+  "@addressAlreadyExists": {
+    "description": "Error message when address already exists"
+  },
+  
+  "requestPermissions": "Request Permissions",
+  "@requestPermissions": {
+    "description": "Dialog title for requesting permissions"
+  },
+  
+  "grantNextPermissions": "Please grant all permissions on the next screen.",
+  "@grantNextPermissions": {
+    "description": "Instruction message for granting permissions"
+  },
+  
+  "permissionsInsufficient": "Insufficient Permissions",
+  "@permissionsInsufficient": {
+    "description": "Dialog title when permissions are insufficient"
+  },
+  
+  "permissionsInsufficientMessage": "Some permissions were not granted.\n\nThe app may not function properly.\nWe recommend enabling permissions from settings.",
+  "@permissionsInsufficientMessage": {
+    "description": "Message when some permissions are not granted"
+  },
+  
+  "penaltyPresetTitle": "Penalty Settings",
+  "@penaltyPresetTitle": {
+    "description": "Title for penalty preset section"
+  },
+  
+  "penaltyPresetDescription": "Choose a timeout and amount preset",
+  "@penaltyPresetDescription": {
+    "description": "Description for penalty preset section"
+  },
+  
+  "penaltyPreset15s": "⚡ 15s / 21 sats",
+  "@penaltyPreset15s": {
+    "description": "Preset for 15 seconds / 21 sats"
+  },
+  
+  "penaltyPreset30s": "🔥 30s / 42 sats",
+  "@penaltyPreset30s": {
+    "description": "Preset for 30 seconds / 42 sats"
+  },
+  
+  "penaltyPreset1m": "💪 1min / 100 sats",
+  "@penaltyPreset1m": {
+    "description": "Preset for 1 minute / 100 sats"
+  },
+  
+  "penaltyPreset5m": "😴 5min / 500 sats",
+  "@penaltyPreset5m": {
+    "description": "Preset for 5 minutes / 500 sats"
+  },
+  
+  "penaltyPreset10m": "😱 10min / 1,000 sats",
+  "@penaltyPreset10m": {
+    "description": "Preset for 10 minutes / 1,000 sats"
+  },
+  
+  "penaltyPreset15m": "💀 15min / 2,100 sats",
+  "@penaltyPreset15m": {
+    "description": "Preset for 15 minutes / 2,100 sats"
+  },
+  
+  "penaltyPresetCustom": "⚙️ Custom",
+  "@penaltyPresetCustom": {
+    "description": "Custom penalty preset option"
+  },
+  
+  "customPenaltySettings": "Custom Settings",
+  "@customPenaltySettings": {
+    "description": "Title for custom penalty settings dialog"
+  },
+  
+  "customPenaltyDescription": "Set timeout and amount individually",
+  "@customPenaltyDescription": {
+    "description": "Description for custom penalty settings"
+  },
+  
+  "noPenalty": "No payment",
+  "@noPenalty": {
+    "description": "Option for no penalty/payment"
+  },
+  
+  "noPenaltyDescription": "No payment will be sent when alarm is stopped",
+  "@noPenaltyDescription": {
+    "description": "Description for no penalty option"
   }
 }
 

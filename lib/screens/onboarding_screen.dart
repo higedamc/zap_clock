@@ -46,6 +46,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   /// 権限リクエストを実行
   Future<void> _requestPermissions(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final permissionService = PermissionService();
     
     // 権限リクエストダイアログを表示
@@ -55,14 +56,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('必要な権限の許可'),
-        content: const Text(
-          'ZapClockが正しく動作するために、以下の権限が必要です：\n\n'
-          '• 通知の表示\n'
-          '• 正確なアラームの設定\n'
-          '• 音楽ファイルへのアクセス\n\n'
-          '次の画面で全ての権限を「許可」してください。',
-        ),
+        title: Text(l10n.requestPermissions),
+        content: Text(l10n.grantNextPermissions),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -86,12 +81,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('権限が不足しています'),
-          content: const Text(
-            '一部の権限が許可されませんでした。\n\n'
-            'アプリが正常に動作しない可能性があります。\n'
-            '設定から権限を有効にすることをお勧めします。',
-          ),
+          title: Text(l10n.permissionsInsufficient),
+          content: Text(l10n.permissionsInsufficientMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

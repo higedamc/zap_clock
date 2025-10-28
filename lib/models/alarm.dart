@@ -62,6 +62,7 @@ class Alarm {
   }
   
   /// 繰り返し曜日を日本語文字列で取得
+  /// @deprecated Use getRepeatDaysString(l10n) instead for proper localization
   String get repeatDaysString {
     if (!hasRepeat) {
       return '1回のみ';
@@ -91,6 +92,49 @@ class Alarm {
     // 週末のみ
     if (selectedDays.length == 2 && repeatDays[5] && repeatDays[6]) {
       return '週末';
+    }
+    
+    return selectedDays.join(', ');
+  }
+  
+  /// 繰り返し曜日をローカライズされた文字列で取得
+  String getRepeatDaysString(dynamic l10n) {
+    if (!hasRepeat) {
+      return l10n.onceOnly;
+    }
+    
+    final dayNames = [
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
+    ];
+    final selectedDays = <String>[];
+    
+    for (int i = 0; i < 7; i++) {
+      if (repeatDays[i]) {
+        selectedDays.add(dayNames[i]);
+      }
+    }
+    
+    // 全曜日が選択されている場合
+    if (selectedDays.length == 7) {
+      return l10n.everyday;
+    }
+    
+    // 平日のみ
+    if (selectedDays.length == 5 && 
+        repeatDays[0] && repeatDays[1] && repeatDays[2] && 
+        repeatDays[3] && repeatDays[4]) {
+      return l10n.weekdays;
+    }
+    
+    // 週末のみ
+    if (selectedDays.length == 2 && repeatDays[5] && repeatDays[6]) {
+      return l10n.weekend;
     }
     
     return selectedDays.join(', ');

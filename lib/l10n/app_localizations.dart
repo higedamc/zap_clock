@@ -589,6 +589,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Let\'s start living a\nmore regular life with ZapClock!'**
   String get onboardingDescription4;
+
+  /// Repeat option for one-time alarm
+  ///
+  /// In en, this message translates to:
+  /// **'Once only'**
+  String get onceOnly;
+
+  /// Repeat option for daily alarm
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get everyday;
+
+  /// Repeat option for weekdays
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get weekdays;
+
+  /// Repeat option for weekend
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend'**
+  String get weekend;
+
+  /// Title for donation recipient field
+  ///
+  /// In en, this message translates to:
+  /// **'Donation Recipient'**
+  String get donationRecipientTitle;
+
+  /// Dialog title for selecting donation recipient
+  ///
+  /// In en, this message translates to:
+  /// **'Select Recipient'**
+  String get selectDonationRecipient;
+
+  /// Default recipient option
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultRecipient;
+
+  /// Description for using global donation recipient setting
+  ///
+  /// In en, this message translates to:
+  /// **'Use global setting'**
+  String get useGlobalSetting;
+
+  /// Placeholder text for donation recipient when not selected
+  ///
+  /// In en, this message translates to:
+  /// **'Default (tap to select)'**
+  String get defaultTapToSelect;
+
+  /// Permissions settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions Settings'**
+  String get permissionsSettings;
+
+  /// Permissions section description
+  ///
+  /// In en, this message translates to:
+  /// **'You can check the status of permissions required for the app to function properly.'**
+  String get permissionsDescription;
+
+  /// Notification permission name
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notification;
+
+  /// Notification permission description
+  ///
+  /// In en, this message translates to:
+  /// **'Required to display alarm notifications'**
+  String get notificationDescription;
+
+  /// Exact alarm permission name
+  ///
+  /// In en, this message translates to:
+  /// **'Exact Alarm'**
+  String get exactAlarm;
+
+  /// Exact alarm permission description
+  ///
+  /// In en, this message translates to:
+  /// **'Required to ring the alarm at the exact specified time'**
+  String get exactAlarmDescription;
+
+  /// Media access permission name
+  ///
+  /// In en, this message translates to:
+  /// **'Media Access'**
+  String get mediaAccess;
+
+  /// Media access permission description
+  ///
+  /// In en, this message translates to:
+  /// **'Required to select custom ringtones'**
+  String get mediaAccessDescription;
+
+  /// Button text to check all permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Check all permissions'**
+  String get checkAllPermissions;
+
+  /// Status text when permission is granted
+  ///
+  /// In en, this message translates to:
+  /// **'Permitted'**
+  String get permitted;
+
+  /// Status text when permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Not permitted'**
+  String get notPermitted;
+
+  /// Success message when permission is granted
+  ///
+  /// In en, this message translates to:
+  /// **'Permission granted'**
+  String get permissionGranted;
+
+  /// Dialog title when permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied'**
+  String get permissionDenied;
+
+  /// Message when permission is permanently denied
+  ///
+  /// In en, this message translates to:
+  /// **'This permission needs to be enabled from settings.\nWould you like to open settings?'**
+  String get permissionDeniedMessage;
+
+  /// Button text to open system settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// Dialog title for checking permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Check Permissions'**
+  String get checkPermissions;
+
+  /// Message explaining permission check
+  ///
+  /// In en, this message translates to:
+  /// **'Check all permissions required for the app.\nIf any permissions are not granted, you will be prompted to grant them.'**
+  String get checkPermissionsMessage;
+
+  /// Confirm button text
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// Success message when all permissions are granted
+  ///
+  /// In en, this message translates to:
+  /// **'All permissions granted'**
+  String get allPermissionsGranted;
+
+  /// Warning message when some permissions are denied
+  ///
+  /// In en, this message translates to:
+  /// **'Some permissions were not granted'**
+  String get somePermissionsDenied;
+
+  /// Description for default donation recipient setting
+  ///
+  /// In en, this message translates to:
+  /// **'Used as the default donation recipient when creating alarms'**
+  String get defaultDonationRecipientDescription;
+
+  /// Button text to add custom donation recipient
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom recipient'**
+  String get addCustomRecipient;
+
+  /// Dialog title for delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Confirmation'**
+  String get deleteConfirmation;
+
+  /// Label for emoji selection
+  ///
+  /// In en, this message translates to:
+  /// **'Select emoji'**
+  String get selectEmoji;
+
+  /// Required name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Name *'**
+  String get nameRequired;
+
+  /// Hint text example for name field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Bitcoin Magazine'**
+  String get nameHintExample;
+
+  /// Hint text example for address field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., tips@bitcoin.com'**
+  String get addressHintExample;
+
+  /// Description field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Hint text example for description field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Bitcoin news and education'**
+  String get descriptionHintExample;
+
+  /// Error message when required fields are empty
+  ///
+  /// In en, this message translates to:
+  /// **'Name and Lightning Address are required'**
+  String get nameAndAddressRequired;
+
+  /// Add button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Error message when address already exists
+  ///
+  /// In en, this message translates to:
+  /// **'This Lightning Address is already registered'**
+  String get addressAlreadyExists;
+
+  /// Dialog title for requesting permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Request Permissions'**
+  String get requestPermissions;
+
+  /// Instruction message for granting permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Please grant all permissions on the next screen.'**
+  String get grantNextPermissions;
+
+  /// Dialog title when permissions are insufficient
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient Permissions'**
+  String get permissionsInsufficient;
+
+  /// Message when some permissions are not granted
+  ///
+  /// In en, this message translates to:
+  /// **'Some permissions were not granted.\n\nThe app may not function properly.\nWe recommend enabling permissions from settings.'**
+  String get permissionsInsufficientMessage;
+
+  /// Title for penalty preset section
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty Settings'**
+  String get penaltyPresetTitle;
+
+  /// Description for penalty preset section
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a timeout and amount preset'**
+  String get penaltyPresetDescription;
+
+  /// Preset for 15 seconds / 21 sats
+  ///
+  /// In en, this message translates to:
+  /// **'⚡ 15s / 21 sats'**
+  String get penaltyPreset15s;
+
+  /// Preset for 30 seconds / 42 sats
+  ///
+  /// In en, this message translates to:
+  /// **'🔥 30s / 42 sats'**
+  String get penaltyPreset30s;
+
+  /// Preset for 1 minute / 100 sats
+  ///
+  /// In en, this message translates to:
+  /// **'💪 1min / 100 sats'**
+  String get penaltyPreset1m;
+
+  /// Preset for 5 minutes / 500 sats
+  ///
+  /// In en, this message translates to:
+  /// **'😴 5min / 500 sats'**
+  String get penaltyPreset5m;
+
+  /// Preset for 10 minutes / 1,000 sats
+  ///
+  /// In en, this message translates to:
+  /// **'😱 10min / 1,000 sats'**
+  String get penaltyPreset10m;
+
+  /// Preset for 15 minutes / 2,100 sats
+  ///
+  /// In en, this message translates to:
+  /// **'💀 15min / 2,100 sats'**
+  String get penaltyPreset15m;
+
+  /// Custom penalty preset option
+  ///
+  /// In en, this message translates to:
+  /// **'⚙️ Custom'**
+  String get penaltyPresetCustom;
+
+  /// Title for custom penalty settings dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Settings'**
+  String get customPenaltySettings;
+
+  /// Description for custom penalty settings
+  ///
+  /// In en, this message translates to:
+  /// **'Set timeout and amount individually'**
+  String get customPenaltyDescription;
+
+  /// Option for no penalty/payment
+  ///
+  /// In en, this message translates to:
+  /// **'No payment'**
+  String get noPenalty;
+
+  /// Description for no penalty option
+  ///
+  /// In en, this message translates to:
+  /// **'No payment will be sent when alarm is stopped'**
+  String get noPenaltyDescription;
 }
 
 class _AppLocalizationsDelegate
