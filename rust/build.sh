@@ -1,24 +1,58 @@
 #!/bin/bash
 set -e
 
+# 色の定義
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 # プロジェクトルートに移動
-cd ..
+cd "$(dirname "$0")/.."
 
-# flutter_rust_bridgeのコード生成
-echo "🔨 Generating Flutter Rust Bridge code..."
+echo -e "${BLUE}🚀 Zap Clock - Rust Build Script${NC}"
+echo ""
 
-# 設定ファイルベースで生成
+# cargo-ndkのチェック
+if ! command -v cargo-ndk &> /dev/null; then
+    echo -e "${RED}❌ cargo-ndk が見つかりません${NC}"
+    echo -e "${YELLOW}以下のコマンドでインストールしてください:${NC}"
+    echo "cargo install cargo-ndk"
+    exit 1
+fi
+
+# ビルドモードの選択（引数で指定、デフォルトはdebug）
+BUILD_MODE="${1:-debug}"
+
+if [ "$BUILD_MODE" = "release" ]; then
+    BUILD_FLAG="--release"
+    echo -e "${GREEN}📦 リリースモードでビルドします${NC}"
+else
+    BUILD_FLAG=""
+    echo -e "${GREEN}🔧 デバッグモードでビルドします${NC}"
+fi
+
+echo ""
+echo -e "${BLUE}ステップ1: Flutter Rust Bridge コード生成${NC}"
 flutter_rust_bridge_codegen generate
 
-echo "✅ Bridge code generated successfully!"
-
-# Android用ビルド（必要に応じて）
-echo "📦 Building Rust library for Android..."
-# cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release
-
-echo "🎉 Build complete!"
 echo ""
-echo "次のステップ:"
-echo "1. Android用ビルド: cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release"
-echo "2. Flutterアプリ実行: cd .. && fvm flutter run"
+echo -e "${BLUE}ステップ2: Android用Rustライブラリをビルド${NC}"
+cd rust
+
+# Android用ビルド（arm64-v8a）
+cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build $BUILD_FLAG
+
+cd ..
+
+echo ""
+echo -e "${GREEN}✅ ビルド完了！${NC}"
+echo ""
+echo -e "${YELLOW}次のステップ:${NC}"
+echo "  fvm flutter run    # アプリを実行"
+echo ""
+echo -e "${YELLOW}オプション:${NC}"
+echo "  ./rust/build.sh           # デバッグビルド（デフォルト）"
+echo "  ./rust/build.sh release   # リリースビルド（最適化あり）"
 

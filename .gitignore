@@ -44,7 +44,30 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android JNI libraries (Rust build artifacts)
+/android/app/src/main/jniLibs/
+
+# Android local properties
+/android/local.properties
+
 # Rust related
 rust/target/
 **/*.rs.bk
+
+# Flutter generated files
 pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Generated bridge code (should be committed but listed here for reference)
+# /lib/bridge_generated.dart/
+
+# Android 署名鍵 (絶対に Git にコミットしないこと!)
+*.jks
+*.keystore
+android/key.properties
+upload-keystore.jks
+keystore.b64
+
+# CI 環境で生成される一時ファイル
+android/app/upload-keystore.jks

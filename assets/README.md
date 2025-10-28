@@ -1,37 +1,36 @@
 # Assets Directory
 
-## アラーム音声ファイルについて
+## About Alarm Sound File
 
-このディレクトリに `alarm_sound.mp3` という名前で音声ファイルを配置してください。
+Place an audio file named `alarm_sound.mp3` in this directory.
 
-### 推奨される音声ファイルの仕様
+### Recommended Audio File Specifications
 
-- **フォーマット**: MP3
-- **ファイル名**: `alarm_sound.mp3`（厳守）
-- **長さ**: 10〜30秒程度
-- **音量**: 適度な音量（アプリ側で0.8倍で再生されます）
+- **Format**: MP3
+- **Filename**: `alarm_sound.mp3` (strictly enforced)
+- **Duration**: 10-30 seconds approximately
+- **Volume**: Moderate volume (played at 0.8x in the app)
 
-### 音声ファイルの入手方法
+### How to Obtain Audio File
 
-1. **フリー素材サイトから入手**
-   - [効果音ラボ](https://soundeffect-lab.info/)
-   - [DOVA-SYNDROME](https://dova-s.jp/)
-   - [魔王魂](https://maou.audio/)
+1. **Obtain from Free Sound Resource Sites**
+   - [FreeSound](https://freesound.org/)
+   - [Zapsplat](https://www.zapsplat.com/)
+   - [Pixabay](https://pixabay.com/sound-effects/)
 
-2. **自作する**
-   - Audacityなどの音声編集ソフトを使用
+2. **Create Your Own**
+   - Use audio editing software like Audacity
 
-3. **システムのアラーム音を使用**（推奨しない）
-   - 著作権に注意
+3. **Use System Alarm Sound** (not recommended)
+   - Pay attention to copyright
 
-### テスト用の音声ファイル
+### Test Audio File
 
-開発中は、短い音声ファイル（5秒程度）を使用することをおすすめします。
+During development, we recommend using a short audio file (about 5 seconds).
 
-### 注意事項
+### Notes
 
-- ファイル名は必ず `alarm_sound.mp3` にしてください
-- ファイルサイズは1MB以下を推奨
-- アプリはこの音声をループ再生します
-- フェードイン機能が有効（3秒）
-
+- Filename must be `alarm_sound.mp3`
+- File size under 1MB recommended
+- App will loop play this sound
+- Fade-in feature enabled (3 seconds)

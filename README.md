@@ -175,7 +175,24 @@ ZapClock is available (planned) on ZapStore, a Nostr-based app store.
 3. Tap the install button
 
 ### For Developers
-For release instructions on ZapStore, refer to [`ZAPSTORE_RELEASE.md`](ZAPSTORE_RELEASE.md).
+
+We use GitHub Actions for automated releases:
+
+- 🚀 **[Quick Start Guide](QUICKSTART_RELEASE.md)** - Get started in 15 minutes
+- 🔧 **[Setup Guide](GITHUB_ACTIONS_SETUP.md)** - Detailed initial configuration
+- 📖 **[Release Process](GITHUB_ACTIONS_RELEASE.md)** - Complete release workflow
+- 📝 **[Manual Release](ZAPSTORE_RELEASE.md)** - Manual release instructions
+
+#### Quick Release
+```bash
+# Update version in pubspec.yaml and zapstore.yaml
+# Update CHANGELOG.md
+git add .
+git commit -m "chore: bump version to v1.0.1"
+git tag v1.0.1
+git push origin main v1.0.1
+# GitHub Actions will automatically build and create a release
+```
 
 ---
 

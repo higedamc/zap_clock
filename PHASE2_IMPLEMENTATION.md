@@ -1,221 +1,221 @@
-# ZapClock - フェーズ2実装完了レポート ⚡
+# ZapClock - Phase 2 Implementation Report ⚡
 
-## 🎉 実装完了！
+## 🎉 Implementation Complete!
 
-**Nostr Wallet Connect (NWC) + Lightning送金機能の実装が完了しました！**
-
----
-
-## ✅ 完了した機能
-
-### 1. Rustバックエンド実装
-
-#### NWCクライアント (`rust/src/nwc.rs`)
-- ✅ NWC接続文字列のパース
-- ✅ Nostrリレーへの接続
-- ✅ Invoice支払い機能
-- ✅ `nostr-sdk` v0.37を使用
-
-#### Lightning支払い処理 (`rust/src/lightning.rs`)
-- ✅ LightningアドレスからLNURL-payエンドポイントへの変換
-- ✅ LNURL-pay情報の取得
-- ✅ Invoice生成リクエスト
-- ✅ 金額のバリデーション
-
-#### APIレイヤー (`rust/src/api.rs`)
-- ✅ `test_nwc_connection` - NWC接続のテスト
-- ✅ `pay_lightning_invoice` - Lightning送金の実行
-- ✅ flutter_rust_bridge v2.7対応
-
-### 2. Flutter側実装
-
-#### サービス層
-- ✅ `NwcService` - Rustブリッジとの橋渡し（モック実装含む）
-- ✅ エラーハンドリング
-- ✅ ローディング状態管理
-
-#### Provider層
-- ✅ `nwcServiceProvider` - NWCサービスのProvider
-- ✅ `nwcConnectionStatusProvider` - 接続状態管理
-
-#### 設定画面 (`screens/settings_screen.dart`)
-- ✅ NWC接続文字列入力フィールド
-- ✅ 接続テスト機能
-- ✅ デフォルトLightningアドレス設定
-- ✅ デフォルト送金額設定
-- ✅ 詳細な説明セクション
-- ✅ エラーメッセージ表示
-- ✅ ローディングインジケーター
-
-#### アラーム編集画面の拡張
-- ✅ Lightning設定セクション追加
-  - NWC接続文字列入力
-  - Lightningアドレス入力
-  - 送金額（sats）入力
-- ✅ オプショナル設定（全て空欄の場合は通常のアラーム）
-- ✅ 視覚的なヘルプテキスト
-
-#### アラーム鳴動画面の強化
-- ✅ Lightning設定の検出
-- ✅ 条件分岐UI
-  - Lightning設定あり→「送金してアラームを停止」
-  - Lightning設定なし→「アラームを停止」
-- ✅ 送金情報の表示（金額、送金先）
-- ✅ 送金処理中のローディング表示
-- ✅ エラーメッセージ表示
-- ✅ 送金失敗時はアラームを鳴らし続ける
-
-### 3. UI/UX改善
-- ✅ 設定画面へのルート追加（`/settings`）
-- ✅ アラーム一覧画面に設定ボタン追加
-- ✅ Lightning関連のアイコンとカラー統一
-- ✅ レスポンシブデザイン
-- ✅ アニメーション（ローディング、エラー表示）
+**Nostr Wallet Connect (NWC) + Lightning payment feature implementation is complete!**
 
 ---
 
-## 📁 ファイル構成
+## ✅ Completed Features
+
+### 1. Rust Backend Implementation
+
+#### NWC Client (`rust/src/nwc.rs`)
+- ✅ NWC connection string parsing
+- ✅ Nostr relay connection
+- ✅ Invoice payment functionality
+- ✅ Uses `nostr-sdk` v0.37
+
+#### Lightning Payment Processing (`rust/src/lightning.rs`)
+- ✅ Lightning address to LNURL-pay endpoint conversion
+- ✅ LNURL-pay information retrieval
+- ✅ Invoice generation request
+- ✅ Amount validation
+
+#### API Layer (`rust/src/api.rs`)
+- ✅ `test_nwc_connection` - NWC connection testing
+- ✅ `pay_lightning_invoice` - Execute Lightning payment
+- ✅ flutter_rust_bridge v2.7 support
+
+### 2. Flutter Side Implementation
+
+#### Service Layer
+- ✅ `NwcService` - Bridge with Rust (including mock implementation)
+- ✅ Error handling
+- ✅ Loading state management
+
+#### Provider Layer
+- ✅ `nwcServiceProvider` - NWC service provider
+- ✅ `nwcConnectionStatusProvider` - Connection status management
+
+#### Settings Screen (`screens/settings_screen.dart`)
+- ✅ NWC connection string input field
+- ✅ Connection test functionality
+- ✅ Default Lightning address setting
+- ✅ Default payment amount setting
+- ✅ Detailed explanation sections
+- ✅ Error message display
+- ✅ Loading indicator
+
+#### Alarm Edit Screen Enhancement
+- ✅ Added Lightning settings section
+  - NWC connection string input
+  - Lightning address input
+  - Payment amount (sats) input
+- ✅ Optional settings (normal alarm if all fields are empty)
+- ✅ Visual help text
+
+#### Alarm Ring Screen Enhancement
+- ✅ Lightning settings detection
+- ✅ Conditional UI branching
+  - Lightning settings present → "Pay to Stop Alarm"
+  - Lightning settings absent → "Stop Alarm"
+- ✅ Payment information display (amount, recipient)
+- ✅ Loading display during payment processing
+- ✅ Error message display
+- ✅ Alarm continues ringing on payment failure
+
+### 3. UI/UX Improvements
+- ✅ Added route to settings screen (`/settings`)
+- ✅ Added settings button to alarm list screen
+- ✅ Unified Lightning-related icons and colors
+- ✅ Responsive design
+- ✅ Animations (loading, error display)
+
+---
+
+## 📁 File Structure
 
 ```
 zap_clock/
 ├── rust/
-│   ├── Cargo.toml            # Rust依存関係（nostr-sdk等）
-│   ├── build.sh              # ビルドスクリプト
+│   ├── Cargo.toml            # Rust dependencies (nostr-sdk, etc.)
+│   ├── build.sh              # Build script
 │   └── src/
-│       ├── lib.rs            # ライブラリエントリーポイント
-│       ├── api.rs            # Flutter側に公開するAPI
-│       ├── nwc.rs            # NWCクライアント実装
-│       └── lightning.rs      # Lightning支払い処理
+│       ├── lib.rs            # Library entry point
+│       ├── api.rs            # API exposed to Flutter
+│       ├── nwc.rs            # NWC client implementation
+│       └── lightning.rs      # Lightning payment processing
 ├── lib/
 │   ├── services/
-│   │   └── nwc_service.dart  # NWCサービス（モック実装）
+│   │   └── nwc_service.dart  # NWC service (mock implementation)
 │   ├── providers/
-│   │   └── nwc_provider.dart # NWC関連のProvider
+│   │   └── nwc_provider.dart # NWC-related providers
 │   ├── screens/
-│   │   ├── settings_screen.dart      # ⚙️ 設定画面
-│   │   ├── alarm_edit_screen.dart    # 📝 Lightning設定を追加
-│   │   └── alarm_ring_screen.dart    # 🚨 送金処理を統合
+│   │   ├── settings_screen.dart      # ⚙️ Settings screen
+│   │   ├── alarm_edit_screen.dart    # 📝 Added Lightning settings
+│   │   └── alarm_ring_screen.dart    # 🚨 Integrated payment processing
 │   └── models/
-│       └── alarm.dart        # Lightning設定フィールドを使用
-└── pubspec.yaml              # flutter_rust_bridge, http追加
+│       └── alarm.dart        # Uses Lightning settings fields
+└── pubspec.yaml              # Added flutter_rust_bridge, http
 ```
 
 ---
 
-## 🔧 技術スタック
+## 🔧 Tech Stack
 
-### Rust側
-- **nostr**: ^0.37 - Nostr プロトコル実装
-- **nostr-sdk**: ^0.37 - Nostr クライアントSDK
-- **reqwest**: ^0.12 - HTTPクライアント
-- **serde**: ^1.0 - JSON シリアライズ/デシリアライズ
-- **tokio**: ^1 - 非同期ランタイム
-- **flutter_rust_bridge**: 2.7.0 - Flutter-Rustブリッジ
+### Rust Side
+- **nostr**: ^0.37 - Nostr protocol implementation
+- **nostr-sdk**: ^0.37 - Nostr client SDK
+- **reqwest**: ^0.12 - HTTP client
+- **serde**: ^1.0 - JSON serialization/deserialization
+- **tokio**: ^1 - Async runtime
+- **flutter_rust_bridge**: 2.7.0 - Flutter-Rust bridge
 
-### Flutter側
-- **flutter_rust_bridge**: ^2.7.0 - Rustブリッジ
-- **http**: ^1.2.2 - HTTPクライアント（LNURL-pay用）
-
----
-
-## 🚀 使い方
-
-### 1. 基本的なアラーム（Lightning設定なし）
-
-1. アラーム一覧画面で「+」ボタンをタップ
-2. 時刻とラベルを設定
-3. 「保存」をタップ
-4. アラームが鳴ったら「アラームを停止」ボタンで停止
-
-### 2. Lightning送金が必要なアラーム
-
-#### 事前準備
-1. NWC対応ウォレット（Alby、Mutinyなど）を用意
-2. NWC接続文字列を取得
-
-#### 設定手順
-1. 右上の⚙️（設定）ボタンをタップ
-2. 「Nostr Wallet Connect」セクションに接続文字列を入力
-3. 「接続をテスト」で動作確認（オプション）
-4. アラーム編集画面でLightning設定を入力
-   - NWC接続文字列
-   - Lightningアドレス（例：`user@getalby.com`）
-   - 送金額（sats）
-5. 「保存」をタップ
-
-#### アラーム停止時
-1. アラームが鳴る
-2. 送金情報が表示される
-3. 「送金してアラームを停止」ボタンをタップ
-4. 送金処理中...（ローディング表示）
-5. 送金成功→アラーム停止
-6. 送金失敗→エラー表示、アラームは鳴り続ける
+### Flutter Side
+- **flutter_rust_bridge**: ^2.7.0 - Rust bridge
+- **http**: ^1.2.2 - HTTP client (for LNURL-pay)
 
 ---
 
-## ⚠️ 現在の制限事項
+## 🚀 How to Use
 
-### Rustブリッジが未生成
+### 1. Basic Alarm (No Lightning Settings)
 
-現時点では、Rustコードは実装されていますが、`flutter_rust_bridge_codegen`によるブリッジコード生成は行っていません。
+1. Tap the "+" button on the alarm list screen
+2. Set time and label
+3. Tap "Save"
+4. When alarm rings, tap "Stop Alarm" to silence it
 
-**そのため、Lightning送金機能は「モック実装」で動作します。**
+### 2. Alarm Requiring Lightning Payment
 
-#### モック実装の動作
-- `NwcService.testConnection()` → 1秒待機後に「接続成功（モック）」
-- `NwcService.payInvoice()` → 2秒待機後にダミーのpayment_hashを返す
-- 実際のNostr通信やLightning送金は行われません
+#### Prerequisites
+1. Prepare an NWC-compatible wallet (Alby, Mutiny, etc.)
+2. Obtain NWC connection string
 
-### 本番環境で動作させるには
+#### Setup Steps
+1. Tap the ⚙️ (Settings) button in the top right
+2. Enter connection string in "Nostr Wallet Connect" section
+3. Test connection with "Test Connection" (optional)
+4. Enter Lightning settings in alarm edit screen
+   - NWC connection string
+   - Lightning address (e.g., `user@getalby.com`)
+   - Payment amount (sats)
+5. Tap "Save"
 
-以下の手順でRustブリッジを生成する必要があります：
+#### Stopping the Alarm
+1. Alarm rings
+2. Payment information is displayed
+3. Tap "Pay to Stop Alarm" button
+4. Processing payment... (loading display)
+5. Payment success → Alarm stops
+6. Payment failure → Error display, alarm continues ringing
+
+---
+
+## ⚠️ Current Limitations
+
+### Rust Bridge Not Generated
+
+Currently, Rust code is implemented but bridge code generation via `flutter_rust_bridge_codegen` has not been performed.
+
+**Therefore, Lightning payment functionality operates with "mock implementation".**
+
+#### Mock Implementation Behavior
+- `NwcService.testConnection()` → Waits 1 second, returns "Connection successful (mock)"
+- `NwcService.payInvoice()` → Waits 2 seconds, returns dummy payment_hash
+- No actual Nostr communication or Lightning payment occurs
+
+### To Use in Production
+
+The following steps are required to generate the Rust bridge:
 
 ```bash
-# 1. flutter_rust_bridge_codegenをインストール
+# 1. Install flutter_rust_bridge_codegen
 cargo install flutter_rust_bridge_codegen
 
-# 2. ビルドスクリプトを実行
+# 2. Run build script
 cd /Users/apple/work/zap_clock/rust
 chmod +x build.sh
 ./build.sh
 
-# 3. Android用ビルド（要cargo-ndk）
+# 3. Android build (requires cargo-ndk)
 cargo install cargo-ndk
 cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release
 
-# 4. Flutterアプリをビルド
+# 4. Build Flutter app
 cd /Users/apple/work/zap_clock
 fvm flutter build apk --release
 ```
 
 ---
 
-## 🧪 テスト項目
+## 🧪 Test Items
 
-### 基本機能（モック実装で確認可能）
-- [ ] 設定画面が表示される
-- [ ] NWC接続文字列を入力できる
-- [ ] 「接続をテスト」ボタンでモック成功メッセージが表示される
-- [ ] アラーム編集画面にLightning設定フィールドが表示される
-- [ ] Lightning設定を入力してアラームを保存できる
-- [ ] Lightning設定ありのアラームが鳴る
-- [ ] 送金情報が表示される
-- [ ] 「送金してアラームを停止」ボタンを押すとローディング表示
-- [ ] 2秒後に送金成功してアラームが停止する
+### Basic Features (Can be verified with mock implementation)
+- [ ] Settings screen displays
+- [ ] Can enter NWC connection string
+- [ ] "Test Connection" button displays mock success message
+- [ ] Lightning settings fields display in alarm edit screen
+- [ ] Can enter Lightning settings and save alarm
+- [ ] Alarm with Lightning settings rings
+- [ ] Payment information displays
+- [ ] Pressing "Pay to Stop Alarm" button shows loading display
+- [ ] Payment succeeds after 2 seconds and alarm stops
 
-### Rustブリッジ生成後のテスト
-- [ ] 実際のNWC接続テストが成功する
-- [ ] Lightning送金が実行される
-- [ ] 送金失敗時にエラーメッセージが表示される
-- [ ] 送金失敗時にアラームが鳴り続ける
+### Tests After Rust Bridge Generation
+- [ ] Actual NWC connection test succeeds
+- [ ] Lightning payment executes
+- [ ] Error message displays on payment failure
+- [ ] Alarm continues ringing on payment failure
 
 ---
 
-## 📚 参考資料
+## 📚 References
 
 ### Nostr Wallet Connect (NWC)
 - [NWC Specification](https://nwc.dev/)
-- [Alby - NWCの使い方](https://guides.getalby.com/)
+- [Alby - How to use NWC](https://guides.getalby.com/)
 
 ### LNURL-pay
 - [LNURL Specification](https://github.com/lnurl/luds)
@@ -227,64 +227,63 @@ fvm flutter build apk --release
 
 ---
 
-## 🎯 次のステップ（オプション）
+## 🎯 Next Steps (Optional)
 
-### 1. Rustブリッジの生成と実機テスト
+### 1. Rust Bridge Generation and Device Testing
 
-上記の手順でRustコードをビルドし、実際のNWC/Lightning送金をテストします。
+Follow the steps above to build Rust code and test actual NWC/Lightning payments.
 
-### 2. UI/UX改善
+### 2. UI/UX Improvements
 
-- [ ] 送金履歴の表示
-- [ ] 複数のNWC接続プロファイル管理
-- [ ] アラームごとに異なる送金先を設定
+- [ ] Payment history display
+- [ ] Multiple NWC connection profile management
+- [ ] Different payment recipients per alarm
 
-### 3. セキュリティ強化
+### 3. Security Enhancement
 
-- [ ] NWC接続文字列の暗号化保存（flutter_secure_storage）
-- [ ] 生体認証による送金承認
-- [ ] 送金額の上限設定
+- [ ] Encrypted storage of NWC connection strings (flutter_secure_storage)
+- [ ] Biometric authentication for payments
+- [ ] Payment amount limit settings
 
-### 4. エラーハンドリングの強化
+### 4. Enhanced Error Handling
 
-- [ ] ネットワークエラー時の再試行機能
-- [ ] Nostrリレー接続の冗長化
-- [ ] タイムアウト設定
-
----
-
-## 💡 開発メモ
-
-### デザイン判断
-
-1. **オプショナル設定**
-   - Lightning設定（NWC、アドレス、金額）は全てオプション
-   - 3つ全て設定されている場合のみ送金を要求
-   - 柔軟性を重視
-
-2. **送金失敗時の動作**
-   - 送金失敗時はアラームを鳴らし続ける
-   - 「起きるために送金する」というコンセプトを守る
-   - ユーザーに再試行のチャンスを与える
-
-3. **モック実装の採用**
-   - Rustブリッジ生成前でもUIの動作確認が可能
-   - 段階的な開発が可能
-   - テストが容易
+- [ ] Retry functionality for network errors
+- [ ] Nostr relay connection redundancy
+- [ ] Timeout settings
 
 ---
 
-## 🎉 まとめ
+## 💡 Development Notes
 
-フェーズ2の実装により、ZapClockは**世界初のLightning送金で停止するアラームアプリ**になりました！
+### Design Decisions
 
-**現状：** UIとロジックは完成、モック実装で動作確認可能
-**次：** Rustブリッジを生成して実際の送金機能を有効化
+1. **Optional Settings**
+   - All Lightning settings (NWC, address, amount) are optional
+   - Payment required only when all three are set
+   - Prioritizes flexibility
 
-Bitcoin/Nostrエコシステムに馴染んだ、ユニークで実用的なアプリケーションです。
+2. **Behavior on Payment Failure**
+   - Alarm continues ringing on payment failure
+   - Preserves "pay to wake up" concept
+   - Gives user chance to retry
+
+3. **Adopting Mock Implementation**
+   - UI functionality can be verified before Rust bridge generation
+   - Enables phased development
+   - Easy to test
 
 ---
 
-_作成日: 2025-01-25_
-_更新日: 2025-01-25_
+## 🎉 Summary
 
+With Phase 2 implementation, ZapClock has become **the world's first alarm app that stops with Lightning payments**!
+
+**Current Status:** UI and logic complete, operational verification possible with mock implementation
+**Next:** Generate Rust bridge to enable actual payment functionality
+
+A unique and practical application deeply integrated into the Bitcoin/Nostr ecosystem.
+
+---
+
+_Created: 2025-01-25_
+_Updated: 2025-01-25_

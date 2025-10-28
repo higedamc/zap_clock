@@ -1,136 +1,136 @@
-# ZapClock 実装ステータス
+# ZapClock Implementation Status
 
-## ✅ 完了した作業
+## ✅ Completed Tasks
 
-### フェーズ1: ベーシックなアラームアプリ ✅
+### Phase 1: Basic Alarm App ✅
 
-1. **プロジェクト構造の構築**
-   - ✅ Flutter + Riverpod + GoRouter のセットアップ
-   - ✅ Models/Providers/Services の実装
-   - ✅ 3つのメイン画面の実装
-     - アラーム一覧画面 (`alarm_list_screen.dart`)
-     - アラーム編集画面 (`alarm_edit_screen.dart`)
-     - アラーム鳴動画面 (`alarm_ring_screen.dart`)
+1. **Project Structure Setup**
+   - ✅ Flutter + Riverpod + GoRouter setup
+   - ✅ Models/Providers/Services implementation
+   - ✅ Three main screens implemented
+     - Alarm list screen (`alarm_list_screen.dart`)
+     - Alarm edit screen (`alarm_edit_screen.dart`)
+     - Alarm ring screen (`alarm_ring_screen.dart`)
 
-2. **アラーム機能の実装**
-   - ✅ `alarm` パッケージ (v5.1.5) への切り替え完了
-   - ✅ アラームのスケジュール機能
-   - ✅ アラームの鳴動機能
-   - ✅ 繰り返しアラーム機能
-   - ✅ アラーム音声の再生
-   - ✅ バイブレーション
-   - ✅ フェードイン機能（3秒）
+2. **Alarm Features Implementation**
+   - ✅ Migration to `alarm` package (v5.1.5) completed
+   - ✅ Alarm scheduling functionality
+   - ✅ Alarm ringing functionality
+   - ✅ Recurring alarm functionality
+   - ✅ Alarm sound playback
+   - ✅ Vibration support
+   - ✅ Fade-in feature (3 seconds)
 
-3. **データ永続化**
-   - ✅ SharedPreferences によるローカル保存
-   - ✅ アラームデータの CRUD 操作
+3. **Data Persistence**
+   - ✅ Local storage with SharedPreferences
+   - ✅ CRUD operations for alarm data
 
 4. **UI/UX**
-   - ✅ マテリアルデザイン3対応
-   - ✅ ビットコイン/ライトニングをイメージしたカラーテーマ
-   - ✅ アニメーション付きアラーム鳴動画面
-   - ✅ レスポンシブデザイン
+   - ✅ Material Design 3 support
+   - ✅ Bitcoin/Lightning-themed color palette
+   - ✅ Animated alarm ring screen
+   - ✅ Responsive design
 
-## 📋 次のステップ：動作確認
+## 📋 Next Steps: Operational Testing
 
-### 1. アラーム音声ファイルの準備（重要！）
+### 1. Prepare Alarm Sound File (Important!)
 
-現在、`assets/alarm_sound.mp3` にはシステムのAIFFファイルがコピーされています。
-より良いアラーム音を使用したい場合は、以下の手順で置き換えてください：
+Currently, `assets/alarm_sound.mp3` contains a system AIFF file.
+If you want to use a better alarm sound, replace it with the following steps:
 
 ```bash
-# MP3ファイルを assets/alarm_sound.mp3 として配置
+# Place MP3 file as assets/alarm_sound.mp3
 cp your_alarm_sound.mp3 /Users/apple/work/zap_clock/assets/alarm_sound.mp3
 ```
 
-**推奨される音声ファイルの仕様：**
-- フォーマット: MP3
-- 長さ: 10〜30秒程度
-- 音量: 適度な音量（アプリ側で0.8倍で再生）
+**Recommended sound file specifications:**
+- Format: MP3
+- Duration: 10-30 seconds
+- Volume: Moderate volume (played at 0.8x in the app)
 
-**フリー素材サイト：**
-- [効果音ラボ](https://soundeffect-lab.info/)
-- [DOVA-SYNDROME](https://dova-s.jp/)
-- [魔王魂](https://maou.audio/)
+**Free sound resource sites:**
+- [FreeSound](https://freesound.org/)
+- [Zapsplat](https://www.zapsplat.com/)
+- [Pixabay](https://pixabay.com/sound-effects/)
 
-### 2. ビルドとテスト
+### 2. Build and Test
 
 ```bash
 cd /Users/apple/work/zap_clock
 
-# ビルド
+# Build
 fvm flutter build apk --debug
 
-# または実機/エミュレータで直接実行
+# Or run directly on device/emulator
 fvm flutter run
 ```
 
-### 3. テスト項目
+### 3. Test Items
 
-#### 基本機能
-- [ ] アラームを新規作成できる
-- [ ] アラーム時刻を設定できる
-- [ ] ラベルを設定できる
-- [ ] 繰り返し曜日を設定できる
-- [ ] アラームのON/OFF切り替えができる
-- [ ] アラームを編集できる
-- [ ] アラームを削除できる
+#### Basic Features
+- [ ] Can create a new alarm
+- [ ] Can set alarm time
+- [ ] Can set label
+- [ ] Can set repeat days
+- [ ] Can toggle alarm ON/OFF
+- [ ] Can edit alarm
+- [ ] Can delete alarm
 
-#### アラーム鳴動
-- [ ] 設定した時刻にアラームが鳴る
-- [ ] 音声が再生される
-- [ ] バイブレーションが動作する
-- [ ] フェードイン（3秒）が機能する
-- [ ] 画面ロック解除してアラーム画面が表示される
-- [ ] 戻るボタンが無効化されている
-- [ ] 停止ボタンでアラームが止まる
+#### Alarm Ringing
+- [ ] Alarm rings at set time
+- [ ] Audio plays
+- [ ] Vibration works
+- [ ] Fade-in (3 seconds) functions properly
+- [ ] Screen unlocks and alarm screen displays
+- [ ] Back button is disabled
+- [ ] Stop button silences the alarm
 
-#### 繰り返しアラーム
-- [ ] 繰り返し設定したアラームが次の曜日に再スケジュールされる
-- [ ] 「毎日」「平日」「週末」が正しく表示される
+#### Recurring Alarms
+- [ ] Recurring alarms are rescheduled to the next day
+- [ ] "Every day", "Weekdays", "Weekends" display correctly
 
-#### データ永続性
-- [ ] アプリを再起動してもアラームが保持される
-- [ ] デバイス再起動後もアラームが動作する
+#### Data Persistence
+- [ ] Alarms persist after app restart
+- [ ] Alarms work after device reboot
 
-## 🚀 フェーズ2: Lightning送金機能（未実装）
+## 🚀 Phase 2: Lightning Payment Feature (Not Implemented)
 
-次のフェーズで実装予定：
+To be implemented in the next phase:
 
-### 実装予定の機能
+### Planned Features
 
-1. **NWC (Nostr Wallet Connect) 統合**
+1. **NWC (Nostr Wallet Connect) Integration**
    - Rust + flutter_rust_bridge
-   - rust-nostr ライブラリの使用
-   - NWC接続設定画面
+   - Use rust-nostr library
+   - NWC connection settings screen
 
-2. **Lightning送金機能**
-   - LightningアドレスからLNURL-payへの変換
-   - invoiceの取得
-   - NWC経由での支払い処理
-   - 送金成功後にアラーム停止
+2. **Lightning Payment Feature**
+   - Lightning address to LNURL-pay conversion
+   - Invoice retrieval
+   - Payment processing via NWC
+   - Stop alarm after successful payment
 
-3. **設定画面の追加**
-   - NWC接続文字列の入力
-   - Lightningアドレスの設定
-   - 送金額（sats）の設定
+3. **Add Settings Screen**
+   - NWC connection string input
+   - Lightning address setting
+   - Payment amount (sats) setting
 
-4. **エラーハンドリング**
-   - ネットワークエラー時の処理
-   - 送金失敗時の処理
-   - NWC接続エラー時の処理
+4. **Error Handling**
+   - Network error handling
+   - Payment failure handling
+   - NWC connection error handling
 
-### アーキテクチャ案
+### Architecture Proposal
 
 ```
 lib/
-├── rust_bridge/          # flutter_rust_bridge関連
+├── rust_bridge/          # flutter_rust_bridge related
 │   └── lightning_bridge.dart
 ├── services/
-│   ├── nwc_service.dart  # NWC接続管理
-│   └── lightning_service.dart  # Lightning送金処理
+│   ├── nwc_service.dart  # NWC connection management
+│   └── lightning_service.dart  # Lightning payment processing
 └── screens/
-    └── settings_screen.dart  # NWC/Lightning設定画面
+    └── settings_screen.dart  # NWC/Lightning settings screen
 
 rust/
 └── src/
@@ -141,42 +141,41 @@ rust/
         └── payment.rs
 ```
 
-## 📝 実装メモ
+## 📝 Implementation Notes
 
-### 使用パッケージ
+### Used Packages
 
-- **flutter_riverpod**: ^2.6.1 - 状態管理
-- **alarm**: ^5.1.5 - アラーム機能
-- **shared_preferences**: ^2.3.5 - ローカルストレージ
-- **go_router**: ^14.6.4 - ルーティング
-- **permission_handler**: ^11.3.1 - パーミッション管理
-- **intl**: ^0.20.1 - 日時フォーマット
+- **flutter_riverpod**: ^2.6.1 - State management
+- **alarm**: ^5.1.5 - Alarm functionality
+- **shared_preferences**: ^2.3.5 - Local storage
+- **go_router**: ^14.6.4 - Routing
+- **permission_handler**: ^11.3.1 - Permission management
+- **intl**: ^0.20.1 - Date/time formatting
 
-### 主要な設計判断
+### Key Design Decisions
 
-1. **alarmパッケージの採用理由**
-   - 画面ロック解除機能が組み込み
-   - 音声再生・バイブレーション対応
-   - バックグラウンド動作
-   - シンプルなAPI
+1. **Reasons for Adopting alarm Package**
+   - Built-in screen unlock functionality
+   - Audio playback and vibration support
+   - Background operation
+   - Simple API
 
-2. **Riverpod 2.x の使用**
-   - 最新の構文とベストプラクティスに準拠
-   - Consumer のみを使用（ConsumerWidget は禁止）
-   - UIとロジックの分離
+2. **Using Riverpod 2.x**
+   - Follows latest syntax and best practices
+   - Use Consumer only (ConsumerWidget prohibited)
+   - Separation of UI and logic
 
-3. **MVP アプローチ**
-   - Repository層は未実装（必要になったら追加）
-   - シンプルで保守しやすいコード
-   - 段階的な機能追加
+3. **MVP Approach**
+   - Repository layer not implemented (add when needed)
+   - Simple and maintainable code
+   - Gradual feature additions
 
-## 🐛 既知の問題
+## 🐛 Known Issues
 
-特になし
+None
 
-## 📚 参考資料
+## 📚 References
 
 - [alarm package - pub.dev](https://pub.dev/packages/alarm)
 - [Riverpod documentation](https://riverpod.dev/)
 - [GoRouter documentation](https://pub.dev/packages/go_router)
-
