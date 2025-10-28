@@ -3,8 +3,8 @@
 # 注意: Lightning Address が有効であることを確認してから追加してください
 
 presets:
-  - name: ZapClock Developer (soggyhack)
-    lightningAddress: soggyhack118@walletofsatoshi.com
+  - name: ZapClock Developer
+    lightningAddress: godzhigella@getalby.com
     description: Creator of ZapClock alarm app
     emoji: ⚡
 
