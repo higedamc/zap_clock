@@ -145,12 +145,98 @@ rust/
 
 ### Used Packages
 
+#### Flutter Dependencies
 - **flutter_riverpod**: ^2.6.1 - State management
 - **alarm**: ^5.1.5 - Alarm functionality
 - **shared_preferences**: ^2.3.5 - Local storage
 - **go_router**: ^14.6.4 - Routing
 - **permission_handler**: ^11.3.1 - Permission management
 - **intl**: ^0.20.1 - Date/time formatting
+
+#### Rust Dependencies
+- **nostr-sdk**: 0.37 - Nostr client SDK
+- **nwc**: 0.37 - Nostr Wallet Connect
+- **reqwest**: 0.12 - HTTP client (rustls-tls)
+- **flutter_rust_bridge**: 2.11.1 - Flutter-Rust bridge
+- **tracing**: 0.1 - Structured logging
+- **tracing-subscriber**: 0.3 - Log output configuration
+- **tracing-log**: 0.2 - log crate compatibility
+- **tracing-android**: 0.2 - Android Logcat integration
+
+### Rust Logging System
+
+#### Overview
+
+The Rust backend uses the `tracing` ecosystem for production-grade logging:
+
+- **Thread-safe initialization**: Uses `std::sync::Once` to ensure single initialization
+- **Environment-based filtering**: `RUST_LOG` environment variable support
+- **Platform-specific output**:
+  - Android: Direct integration with Logcat
+  - Other platforms: Structured console output with colors
+- **Structured logging**: Key-value pair support for machine-readable logs
+- **Performance tracing**: Function-level execution tracking with `#[instrument]`
+
+#### Configuration Details
+
+Default log levels (when `RUST_LOG` is not set):
+```rust
+zap_clock=trace      // App code: all logs
+nostr_sdk=info       // Nostr SDK: info and above
+nwc=debug            // NWC client: debug and above
+```
+
+#### Usage in Rust Code
+
+```rust
+use tracing::{info, debug, warn, error, trace, instrument};
+
+// Simple logging
+info!("Lightning address resolved successfully");
+
+// Structured logging with fields
+debug!(
+    lightning_address = %address,
+    amount_sats = amount,
+    "Fetching invoice"
+);
+
+// Error logging
+error!(error = %e, "Failed to pay invoice");
+
+// Function instrumentation (auto-logs entry/exit/duration)
+#[instrument]
+async fn pay_invoice(invoice: String) -> Result<()> {
+    info!("Processing payment");
+    // ... implementation
+}
+```
+
+#### Viewing Logs
+
+**During development (Android):**
+```bash
+# Run app with verbose logging
+RUST_LOG=trace fvm flutter run
+
+# Or view logcat directly
+adb logcat -s zap_clock:V
+```
+
+**During development (non-Android):**
+```bash
+RUST_LOG=trace fvm flutter run
+# Logs appear in console with color coding
+```
+
+**Production builds:**
+```bash
+# Android: Logs appear in Logcat
+adb logcat | grep zap_clock
+
+# Set log level at runtime (if supported by launcher)
+RUST_LOG=info
+```
 
 ### Key Design Decisions
 
