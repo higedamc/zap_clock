@@ -2,18 +2,18 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:yaml/yaml.dart';
 
-/// 送金先プリセット
+/// Donation recipient preset
 class DonationRecipient {
-  /// 表示名
+  /// Display name
   final String name;
   
   /// Lightning Address
   final String lightningAddress;
   
-  /// 説明文
+  /// Description
   final String description;
   
-  /// アイコン絵文字
+  /// Icon emoji
   final String emoji;
   
   const DonationRecipient({
@@ -23,7 +23,7 @@ class DonationRecipient {
     required this.emoji,
   });
   
-  /// JSON形式に変換
+  /// Convert to JSON format
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -33,7 +33,7 @@ class DonationRecipient {
     };
   }
   
-  /// JSONから復元
+  /// Restore from JSON
   factory DonationRecipient.fromJson(Map<String, dynamic> json) {
     return DonationRecipient(
       name: json['name'] as String,
@@ -43,7 +43,7 @@ class DonationRecipient {
     );
   }
   
-  /// YAMLから復元
+  /// Restore from YAML
   factory DonationRecipient.fromYaml(dynamic yaml) {
     return DonationRecipient(
       name: yaml['name'] as String,
@@ -54,20 +54,20 @@ class DonationRecipient {
   }
 }
 
-/// 送金先プリセットリスト
+/// Donation recipient preset list
 class DonationRecipients {
-  /// プリセット一覧（ロード後にセットされる）
+  /// Preset list (set after loading)
   static List<DonationRecipient> _presets = [];
   
-  /// デフォルトの送金先インデックス
+  /// Default donation recipient index
   static int _defaultIndex = 0;
   
-  /// ロード済みフラグ
+  /// Loaded flag
   static bool _isLoaded = false;
   
-  /// assets/donation_recipients.yamlから寄付先リストをロード
+  /// Load donation recipient list from assets/donation_recipients.yaml
   static Future<void> loadFromAssets() async {
-    if (_isLoaded) return; // 既にロード済みの場合はスキップ
+    if (_isLoaded) return; // Skip if already loaded
     
     try {
       final yamlString = await rootBundle.loadString('assets/donation_recipients.yaml');
@@ -81,7 +81,7 @@ class DonationRecipients {
       _defaultIndex = yamlData['default_index'] as int? ?? 0;
       _isLoaded = true;
     } catch (e) {
-      // フォールバック: YAMLロード失敗時はデフォルトリストを使用
+      // Fallback: Use default list if YAML loading fails
       _presets = _getDefaultPresets();
       _defaultIndex = 0;
       _isLoaded = true;
@@ -89,7 +89,7 @@ class DonationRecipients {
     }
   }
   
-  /// フォールバック用のデフォルトプリセット
+  /// Default preset for fallback
   static List<DonationRecipient> _getDefaultPresets() {
     return const [
       DonationRecipient(
@@ -101,7 +101,7 @@ class DonationRecipients {
     ];
   }
   
-  /// プリセット一覧を取得（未ロードの場合は自動ロード）
+  /// Get preset list (auto-load if not loaded)
   static Future<List<DonationRecipient>> get presets async {
     if (!_isLoaded) {
       await loadFromAssets();
@@ -109,7 +109,7 @@ class DonationRecipients {
     return _presets;
   }
   
-  /// プリセット一覧を同期的に取得（既にロード済みの場合のみ）
+  /// Get preset list synchronously (only if already loaded)
   static List<DonationRecipient> get presetsSync {
     if (!_isLoaded) {
       throw StateError('DonationRecipients not loaded yet. Call loadFromAssets() first.');
@@ -117,18 +117,18 @@ class DonationRecipients {
     return _presets;
   }
   
-  /// デフォルトの送金先
+  /// Default donation recipient
   static Future<DonationRecipient> get defaultRecipient async {
     final list = await presets;
     return list[_defaultIndex];
   }
   
-  /// デフォルトの送金先（同期版）
+  /// Default donation recipient (sync version)
   static DonationRecipient get defaultRecipientSync {
     return presetsSync[_defaultIndex];
   }
   
-  /// Lightning Addressから受取人を検索
+  /// Find recipient by Lightning Address
   static Future<DonationRecipient?> findByAddress(String lightningAddress) async {
     final list = await presets;
     try {
@@ -140,7 +140,7 @@ class DonationRecipients {
     }
   }
   
-  /// ロード状態をリセット（テスト用）
+  /// Reset load state (for testing)
   static void reset() {
     _presets = [];
     _defaultIndex = 0;

@@ -1,4 +1,4 @@
-/// Nostr Wallet Connect (NWC) クライアントの実装
+/// Nostr Wallet Connect (NWC) client implementation
 
 use anyhow::{Context, Result};
 use nostr_sdk::prelude::*;
@@ -10,33 +10,33 @@ pub struct NwcClient {
 }
 
 impl NwcClient {
-    /// NWC接続文字列から新しいクライアントを作成
+    /// Create new client from NWC connection string
     pub fn new(connection_string: &str) -> Result<Self> {
-        println!("🔧 [NWC] クライアント作成開始");
+        println!("🔧 [NWC] Starting client creation");
         let nwc_uri = NostrWalletConnectURI::parse(connection_string)
-            .context("NWC接続文字列のパースに失敗")?;
+            .context("Failed to parse NWC connection string")?;
         
-        println!("✅ [NWC] クライアント作成成功");
+        println!("✅ [NWC] Client creation successful");
         println!("   Relay: {}", nwc_uri.relay_url);
         Ok(Self { nwc_uri })
     }
     
-    /// 接続をテストして残高を取得（タイムアウト付き）
+    /// Test connection and get balance (with timeout)
     pub async fn test_connection(&self) -> Result<u64> {
         use tokio::time::{timeout, Duration};
         
-        println!("🔍 [NWC] 接続テスト開始");
-        // NWC URIが正しくパースできていればOK
-        // リレーURLの文字列表現をチェック
+        println!("🔍 [NWC] Starting connection test");
+        // OK if NWC URI is correctly parsed
+        // Check relay URL string representation
         if self.nwc_uri.relay_url.to_string().is_empty() {
-            println!("❌ [NWC] リレーURLが設定されていません");
-            anyhow::bail!("リレーURLが設定されていません");
+            println!("❌ [NWC] Relay URL not set");
+            anyhow::bail!("Relay URL not set");
         }
         
         println!("   Relay: {}", self.nwc_uri.relay_url);
         
-        // 残高を取得（タイムアウト30秒）
-        println!("💰 [NWC] 残高取得中...");
+        // Get balance (30 second timeout)
+        println!("💰 [NWC] Fetching balance...");
         let result = timeout(
             Duration::from_secs(30),
             async {
@@ -47,30 +47,30 @@ impl NwcClient {
         
         match result {
             Ok(Ok(balance_msats)) => {
-                // msatsからsatsに変換（1 sats = 1000 msats）
+                // Convert msats to sats (1 sats = 1000 msats)
                 let balance_sats = balance_msats / 1000;
-                println!("✅ [NWC] 接続テスト成功 - 残高: {} sats ({} msats)", balance_sats, balance_msats);
+                println!("✅ [NWC] Connection test successful - balance: {} sats ({} msats)", balance_sats, balance_msats);
                 Ok(balance_sats)
             }
             Ok(Err(e)) => {
-                println!("❌ [NWC] 残高取得エラー: {}", e);
+                println!("❌ [NWC] Balance retrieval error: {}", e);
                 Err(e.into())
             }
             Err(_) => {
-                println!("⏱️ [NWC] タイムアウト: 30秒以内に応答がありませんでした");
-                anyhow::bail!("NWC接続テストがタイムアウトしました（30秒）")
+                println!("⏱️ [NWC] Timeout: no response within 30 seconds");
+                anyhow::bail!("NWC connection test timed out (30 seconds)")
             }
         }
     }
     
-    /// Invoiceを支払う（タイムアウト付き）
+    /// Pay Invoice (with timeout)
     pub async fn pay_invoice(&self, invoice: &str) -> Result<String> {
         use tokio::time::{timeout, Duration};
         
-        println!("💳 [NWC] Invoice支払い開始");
+        println!("💳 [NWC] Starting Invoice payment");
         println!("   Invoice: {}...", &invoice[..std::cmp::min(30, invoice.len())]);
         
-        // タイムアウトを60秒に設定
+        // Set timeout to 60 seconds
         let result = timeout(
             Duration::from_secs(60),
             self.pay_invoice_internal(invoice)
@@ -78,28 +78,28 @@ impl NwcClient {
         
         match result {
             Ok(Ok(preimage)) => {
-                println!("✅ [NWC] 支払い成功!");
+                println!("✅ [NWC] Payment successful!");
                 println!("   Preimage: {}", &preimage[..std::cmp::min(20, preimage.len())]);
                 Ok(preimage)
             }
             Ok(Err(e)) => {
-                println!("❌ [NWC] 支払いエラー: {}", e);
+                println!("❌ [NWC] Payment error: {}", e);
                 Err(e)
             }
             Err(_) => {
-                println!("⏱️ [NWC] タイムアウト: 60秒以内に応答がありませんでした");
-                anyhow::bail!("NWC支払いがタイムアウトしました（60秒）")
+                println!("⏱️ [NWC] Timeout: no response within 60 seconds");
+                anyhow::bail!("NWC payment timed out (60 seconds)")
             }
         }
     }
     
-    /// Invoice支払いの内部実装
+    /// Internal implementation of Invoice payment
     async fn pay_invoice_internal(&self, invoice: &str) -> Result<String> {
-        println!("🔧 [NWC] NWCクライアントを初期化中...");
+        println!("🔧 [NWC] Initializing NWC client...");
         let nwc_client = NWC::new(self.nwc_uri.clone());
-        println!("✅ [NWC] NWCクライアント初期化完了");
+        println!("✅ [NWC] NWC client initialization complete");
         
-        // PayInvoiceRequestを作成
+        // Create PayInvoiceRequest
         let request_id = format!("pay_{}", rand::random::<u64>());
         println!("   Request ID: {}", request_id);
         
@@ -109,17 +109,16 @@ impl NwcClient {
             amount: None,
         };
         
-        // pay_invoiceリクエスト
-        println!("📤 [NWC] pay_invoiceリクエスト送信中...");
+        // pay_invoice request
+        println!("📤 [NWC] Sending pay_invoice request...");
         println!("   Relay: {}", self.nwc_uri.relay_url);
         
         let response = nwc_client
             .pay_invoice(pay_request)
             .await
-            .context("NWC経由のInvoice支払いに失敗")?;
+            .context("Invoice payment via NWC failed")?;
         
-        // プリイメージを返す
+        // Return preimage
         Ok(response.preimage)
     }
 }
-

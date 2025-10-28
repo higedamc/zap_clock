@@ -8,7 +8,7 @@ import '../providers/storage_provider.dart';
 import '../services/permission_service.dart';
 import '../app_theme.dart';
 
-/// NWC/Lightning設定画面
+/// NWC/Lightning settings screen
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 

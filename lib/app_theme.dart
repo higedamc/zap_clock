@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 
-/// ZapClockアプリの統一テーマ設定
+/// Unified theme settings for ZapClock app
 class AppTheme {
-  // プライマリカラー - Nostrの紫をイメージ
+  // Primary color - inspired by Nostr's purple
   static const Color primaryColor = Color(0xFF8E30EB);
   static const Color primaryDark = Color(0xFF6B23B0);
   static const Color primaryLight = Color(0xFFA855F7);
   
-  // アクセントカラー - 明るい紫・ピンク
+  // Accent color - bright purple/pink
   static const Color accentColor = Color(0xFFC084FC);
   static const Color accentDark = Color(0xFF9333EA);
   
-  // 背景色
+  // Background colors
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color surfaceColor = Colors.white;
   static const Color cardColor = Colors.white;
   
-  // テキストカラー
+  // Text colors
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
   static const Color textHint = Color(0xFFBDBDBD);
   
-  // ステータスカラー
+  // Status colors
   static const Color successColor = Color(0xFF4CAF50);
   static const Color errorColor = Color(0xFFF44336);
   static const Color warningColor = Color(0xFFFF9800);
   
-  // アラーム画面用カラー
+  // Alarm screen color
   static const Color alarmRingColor = Color(0xFFFF5252);
   
-  /// ライトテーマ
+  /// Light theme
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -41,7 +41,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: backgroundColor,
       
-      // AppBar
+      // AppBar theme
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
@@ -54,7 +54,7 @@ class AppTheme {
         ),
       ),
       
-      // Card
+      // Card theme
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 2,
@@ -64,14 +64,14 @@ class AppTheme {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       
-      // FloatingActionButton
+      // FloatingActionButton theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: accentColor,
         foregroundColor: Colors.white,
         elevation: 4,
       ),
       
-      // ElevatedButton
+      // ElevatedButton theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
@@ -84,7 +84,7 @@ class AppTheme {
         ),
       ),
       
-      // TextButton
+      // TextButton theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryColor,
@@ -92,7 +92,7 @@ class AppTheme {
         ),
       ),
       
-      // Switch
+      // Switch theme
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -108,7 +108,7 @@ class AppTheme {
         }),
       ),
       
-      // InputDecoration
+      // InputDecoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.grey.shade100,
@@ -131,7 +131,7 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       
-      // テキストテーマ
+      // Text theme
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           fontSize: 57,

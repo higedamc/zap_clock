@@ -1,4 +1,4 @@
-/// Lightning支払い処理の実装（LNURL-pay対応）
+/// Lightning payment processing implementation (LNURL-pay support)
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -13,7 +13,7 @@ struct LnurlPayResponse {
     metadata: String,
     tag: String,
     #[serde(rename = "commentAllowed")]
-    comment_allowed: Option<u64>, // コメントの最大文字数（オプション）
+    comment_allowed: Option<u64>, // Maximum comment characters (optional)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,77 +33,77 @@ impl LightningPayment {
         }
     }
     
-    /// LightningアドレスからInvoiceを取得
+    /// Get Invoice from Lightning address
     pub async fn get_invoice_from_address(
         &self,
         lightning_address: &str,
         amount_sats: u64,
         comment: Option<String>,
     ) -> Result<String> {
-        println!("🔍 [Lightning] Invoice取得開始: {} sats → {}", amount_sats, lightning_address);
+        println!("🔍 [Lightning] Starting Invoice retrieval: {} sats → {}", amount_sats, lightning_address);
         
-        // LightningアドレスをパースしてLNURL-payエンドポイントに変換
+        // Parse Lightning address and convert to LNURL-pay endpoint
         let parts: Vec<&str> = lightning_address.split('@').collect();
         if parts.len() != 2 {
-            println!("❌ [Lightning] 無効なLightningアドレス形式: {}", lightning_address);
-            anyhow::bail!("無効なLightningアドレス形式");
+            println!("❌ [Lightning] Invalid Lightning address format: {}", lightning_address);
+            anyhow::bail!("Invalid Lightning address format");
         }
         
         let username = parts[0];
         let domain = parts[1];
         
-        // Step 1: LNURL-pay情報を取得
+        // Step 1: Get LNURL-pay information
         let lnurl_endpoint = format!("https://{}/.well-known/lnurlp/{}", domain, username);
-        println!("📡 [Lightning] LNURL-payエンドポイント: {}", lnurl_endpoint);
+        println!("📡 [Lightning] LNURL-pay endpoint: {}", lnurl_endpoint);
         
         let lnurl_response: LnurlPayResponse = self
             .client
             .get(&lnurl_endpoint)
             .send()
             .await
-            .context("LNURL-payエンドポイントへのリクエストに失敗")?
+            .context("Request to LNURL-pay endpoint failed")?
             .json()
             .await
-            .context("LNURL-payレスポンスのパースに失敗")?;
+            .context("Failed to parse LNURL-pay response")?;
         
-        println!("✅ [Lightning] LNURL-pay情報取得成功");
+        println!("✅ [Lightning] LNURL-pay information retrieved successfully");
         println!("   Min: {} sats, Max: {} sats", 
             lnurl_response.min_sendable / 1000, 
             lnurl_response.max_sendable / 1000
         );
         
-        // 金額のバリデーション
+        // Amount validation
         let amount_msats = amount_sats * 1000;
         if amount_msats < lnurl_response.min_sendable
             || amount_msats > lnurl_response.max_sendable
         {
-            println!("❌ [Lightning] 金額が範囲外: {} sats (範囲: {}-{} sats)",
+            println!("❌ [Lightning] Amount out of range: {} sats (range: {}-{} sats)",
                 amount_sats,
                 lnurl_response.min_sendable / 1000,
                 lnurl_response.max_sendable / 1000
             );
             anyhow::bail!(
-                "金額が範囲外です（{}-{} sats）",
+                "Amount out of range ({}-{} sats)",
                 lnurl_response.min_sendable / 1000,
                 lnurl_response.max_sendable / 1000
             );
         }
         
-        // Step 2: Invoiceを取得
-        println!("📡 [Lightning] Invoiceリクエスト: {} msats", amount_msats);
+        // Step 2: Get Invoice
+        println!("📡 [Lightning] Invoice request: {} msats", amount_msats);
         
-        // コメントの処理
+        // Comment processing
         let mut query_params = vec![("amount", amount_msats.to_string())];
         if let Some(comment_text) = comment {
             if let Some(max_comment_len) = lnurl_response.comment_allowed {
                 if comment_text.len() <= max_comment_len as usize {
-                    println!("💬 [Lightning] コメント追加: {}", comment_text);
+                    println!("💬 [Lightning] Adding comment: {}", comment_text);
                     query_params.push(("comment", comment_text));
                 } else {
-                    println!("⚠️ [Lightning] コメントが長すぎるため省略 (最大{}文字)", max_comment_len);
+                    println!("⚠️ [Lightning] Comment too long, omitted (max {} chars)", max_comment_len);
                 }
             } else {
-                println!("⚠️ [Lightning] 受信者はコメントをサポートしていません");
+                println!("⚠️ [Lightning] Recipient does not support comments");
             }
         }
         
@@ -113,12 +113,12 @@ impl LightningPayment {
             .query(&query_params)
             .send()
             .await
-            .context("Invoiceリクエストに失敗")?
+            .context("Invoice request failed")?
             .json()
             .await
-            .context("Invoiceレスポンスのパースに失敗")?;
+            .context("Failed to parse Invoice response")?;
         
-        println!("✅ [Lightning] Invoice取得成功: {}", &invoice_response.pr[..20]);
+        println!("✅ [Lightning] Invoice retrieved successfully: {}", &invoice_response.pr[..20]);
         Ok(invoice_response.pr)
     }
 }
@@ -128,4 +128,3 @@ impl Default for LightningPayment {
         Self::new()
     }
 }
-

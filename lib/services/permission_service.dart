@@ -1,79 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// 権限管理サービス
-/// アプリに必要な各種権限のリクエストとチェックを行う
+/// Permission management service
+/// Request and check various permissions required by the app
 class PermissionService {
-  /// 必要な権限を全てリクエスト
-  /// オンボーディング完了後に呼び出す
+  /// Request all required permissions
+  /// Call after onboarding completion
   Future<Map<Permission, PermissionStatus>> requestAllPermissions() async {
-    debugPrint('📋 アプリに必要な権限をリクエスト開始');
+    debugPrint('📋 Requesting required permissions');
     
     final results = <Permission, PermissionStatus>{};
     
-    // 1. 通知権限
+    // 1. Notification permission
     try {
       final notificationStatus = await Permission.notification.request();
       results[Permission.notification] = notificationStatus;
-      debugPrint('📬 通知権限: ${notificationStatus.name}');
+      debugPrint('📬 Notification permission: ${notificationStatus.name}');
     } catch (e) {
-      debugPrint('⚠️ 通知権限リクエストエラー: $e');
+      debugPrint('⚠️ Notification permission request error: $e');
     }
     
-    // 2. 正確なアラーム権限 (Android 12以降)
+    // 2. Exact alarm permission (Android 12+)
     try {
       final alarmStatus = await Permission.scheduleExactAlarm.request();
       results[Permission.scheduleExactAlarm] = alarmStatus;
-      debugPrint('⏰ 正確なアラーム権限: ${alarmStatus.name}');
+      debugPrint('⏰ Exact alarm permission: ${alarmStatus.name}');
     } catch (e) {
-      debugPrint('⚠️ アラーム権限リクエストエラー: $e');
+      debugPrint('⚠️ Alarm permission request error: $e');
     }
     
-    // 3. 音楽ファイルアクセス権限 (Android 13以降)
+    // 3. Audio file access permission (Android 13+)
     try {
       final audioStatus = await Permission.audio.request();
       results[Permission.audio] = audioStatus;
-      debugPrint('🎵 音楽ファイルアクセス権限: ${audioStatus.name}');
+      debugPrint('🎵 Audio file access permission: ${audioStatus.name}');
     } catch (e) {
-      debugPrint('⚠️ 音楽ファイルアクセス権限リクエストエラー: $e');
+      debugPrint('⚠️ Audio file access permission request error: $e');
     }
     
-    // 4. ストレージ読み取り権限 (Android 12以前)
-    // Android 13以降はPermission.audioで対応
+    // 4. Storage read permission (Android 12 and earlier)
+    // Android 13+ uses Permission.audio
     try {
       final storageStatus = await Permission.storage.status;
       if (!storageStatus.isGranted) {
         final result = await Permission.storage.request();
         results[Permission.storage] = result;
-        debugPrint('💾 ストレージ読み取り権限: ${result.name}');
+        debugPrint('💾 Storage read permission: ${result.name}');
       }
     } catch (e) {
-      debugPrint('⚠️ ストレージ権限リクエストエラー: $e');
+      debugPrint('⚠️ Storage permission request error: $e');
     }
     
-    debugPrint('✅ 権限リクエスト完了');
+    debugPrint('✅ Permission request completed');
     return results;
   }
   
-  /// 通知権限がgrantedかチェック
+  /// Check if notification permission is granted
   Future<bool> hasNotificationPermission() async {
     final status = await Permission.notification.status;
     return status.isGranted;
   }
   
-  /// 正確なアラーム権限がgrantedかチェック
+  /// Check if exact alarm permission is granted
   Future<bool> hasAlarmPermission() async {
     final status = await Permission.scheduleExactAlarm.status;
     return status.isGranted;
   }
   
-  /// 音楽ファイルアクセス権限がgrantedかチェック
+  /// Check if audio file access permission is granted
   Future<bool> hasAudioPermission() async {
     final status = await Permission.audio.status;
     return status.isGranted;
   }
   
-  /// 必要な権限が全て付与されているかチェック
+  /// Check if all required permissions are granted
   Future<bool> hasAllRequiredPermissions() async {
     final notification = await hasNotificationPermission();
     final alarm = await hasAlarmPermission();
@@ -82,15 +82,15 @@ class PermissionService {
     return notification && alarm && audio;
   }
   
-  /// 権限が拒否されている場合、設定画面を開く
+  /// Open app settings if permission is denied
   Future<void> openAppSettings() async {
-    debugPrint('⚙️ アプリ設定画面を開く');
+    debugPrint('⚙️ Opening app settings');
     await openAppSettings();
   }
   
-  /// 権限リクエスト結果のサマリーを表示（デバッグ用）
+  /// Display permission request result summary (for debugging)
   void logPermissionSummary(Map<Permission, PermissionStatus> results) {
-    debugPrint('========== 権限リクエスト結果 ==========');
+    debugPrint('========== Permission Request Results ==========');
     results.forEach((permission, status) {
       final emoji = status.isGranted ? '✅' : '❌';
       debugPrint('$emoji ${permission.toString()}: ${status.name}');
@@ -98,4 +98,3 @@ class PermissionService {
     debugPrint('=======================================');
   }
 }
-

@@ -8,7 +8,7 @@ import '../models/alarm.dart';
 import '../models/donation_recipient.dart';
 import '../app_theme.dart';
 
-/// アラーム一覧画面
+/// Alarm list screen
 class AlarmListScreen extends StatelessWidget {
   const AlarmListScreen({super.key});
 
@@ -136,7 +136,7 @@ class AlarmListScreen extends StatelessWidget {
   }
 }
 
-/// アラームリストのアイテム
+/// Alarm list item
 class _AlarmListItem extends StatelessWidget {
   final Alarm alarm;
   

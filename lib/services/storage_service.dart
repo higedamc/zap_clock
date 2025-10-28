@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/alarm.dart';
 import '../models/donation_recipient.dart';
 
-/// ローカルストレージサービス
-/// SharedPreferencesを使用してアラームデータを永続化
+/// Local storage service
+/// Persist alarm data using SharedPreferences
 class StorageService {
   static const String _alarmsKey = 'alarms';
   static const String _nextIdKey = 'next_alarm_id';
@@ -17,7 +17,7 @@ class StorageService {
   
   StorageService(this._prefs);
   
-  /// 全てのアラームを取得
+  /// Get all alarms
   List<Alarm> getAlarms() {
     final alarmsJson = _prefs.getString(_alarmsKey);
     if (alarmsJson == null) {
@@ -32,7 +32,7 @@ class StorageService {
     }
   }
   
-  /// 全てのアラームを保存
+  /// Save all alarms
   Future<bool> saveAlarms(List<Alarm> alarms) async {
     final alarmsJson = json.encode(
       alarms.map((alarm) => alarm.toJson()).toList(),
@@ -40,14 +40,14 @@ class StorageService {
     return await _prefs.setString(_alarmsKey, alarmsJson);
   }
   
-  /// アラームを追加
+  /// Add an alarm
   Future<bool> addAlarm(Alarm alarm) async {
     final alarms = getAlarms();
     alarms.add(alarm);
     return await saveAlarms(alarms);
   }
   
-  /// アラームを更新
+  /// Update an alarm
   Future<bool> updateAlarm(Alarm alarm) async {
     final alarms = getAlarms();
     final index = alarms.indexWhere((a) => a.id == alarm.id);
@@ -60,73 +60,73 @@ class StorageService {
     return await saveAlarms(alarms);
   }
   
-  /// アラームを削除
+  /// Delete an alarm
   Future<bool> deleteAlarm(int alarmId) async {
     final alarms = getAlarms();
     alarms.removeWhere((alarm) => alarm.id == alarmId);
     return await saveAlarms(alarms);
   }
   
-  /// 次のアラームIDを取得
+  /// Get next alarm ID
   int getNextAlarmId() {
     final nextId = _prefs.getInt(_nextIdKey) ?? 1;
     return nextId;
   }
   
-  /// 次のアラームIDをインクリメント
+  /// Increment next alarm ID
   Future<int> incrementNextAlarmId() async {
     final nextId = getNextAlarmId();
     await _prefs.setInt(_nextIdKey, nextId + 1);
     return nextId;
   }
   
-  /// 全データをクリア（デバッグ用）
+  /// Clear all data (for debugging)
   Future<bool> clearAll() async {
     await _prefs.remove(_alarmsKey);
     await _prefs.remove(_nextIdKey);
     return true;
   }
   
-  // === グローバルNWC設定 ===
+  // === Global NWC settings ===
   
-  /// グローバルNWC接続文字列を取得
+  /// Get global NWC connection string
   String? getGlobalNwcConnection() {
     return _prefs.getString(_globalNwcConnectionKey);
   }
   
-  /// グローバルNWC接続文字列を保存
+  /// Save global NWC connection string
   Future<bool> setGlobalNwcConnection(String connection) async {
     return await _prefs.setString(_globalNwcConnectionKey, connection);
   }
   
-  // === オンボーディング ===
+  // === Onboarding ===
   
-  /// オンボーディング完了フラグを取得
+  /// Get onboarding completion flag
   bool hasCompletedOnboarding() {
     return _prefs.getBool(_hasCompletedOnboardingKey) ?? false;
   }
   
-  /// オンボーディング完了フラグを設定
+  /// Set onboarding completion flag
   Future<bool> setOnboardingCompleted() async {
     return await _prefs.setBool(_hasCompletedOnboardingKey, true);
   }
   
-  // === 送金先設定 ===
+  // === Donation recipient settings ===
   
-  /// 送金先Lightning Addressを取得
-  /// nullの場合はデフォルト（Human Rights Foundation）を使用
+  /// Get donation recipient Lightning Address
+  /// Returns null if not set (uses default: Human Rights Foundation)
   String? getDonationRecipient() {
     return _prefs.getString(_donationRecipientKey);
   }
   
-  /// 送金先Lightning Addressを保存
+  /// Save donation recipient Lightning Address
   Future<bool> setDonationRecipient(String lightningAddress) async {
     return await _prefs.setString(_donationRecipientKey, lightningAddress);
   }
   
-  // === ユーザー定義の寄付先 ===
+  // === User-defined donation recipients ===
   
-  /// ユーザー定義の寄付先リストを取得
+  /// Get user-defined donation recipient list
   List<DonationRecipient> getCustomRecipients() {
     final recipientsJson = _prefs.getString(_customRecipientsKey);
     if (recipientsJson == null) {
@@ -141,7 +141,7 @@ class StorageService {
     }
   }
   
-  /// ユーザー定義の寄付先リストを保存
+  /// Save user-defined donation recipient list
   Future<bool> saveCustomRecipients(List<DonationRecipient> recipients) async {
     final recipientsJson = json.encode(
       recipients.map((r) => r.toJson()).toList(),
@@ -149,28 +149,27 @@ class StorageService {
     return await _prefs.setString(_customRecipientsKey, recipientsJson);
   }
   
-  /// ユーザー定義の寄付先を追加
+  /// Add user-defined donation recipient
   Future<bool> addCustomRecipient(DonationRecipient recipient) async {
     final recipients = getCustomRecipients();
     
-    // 重複チェック（Lightning Address で判定）
+    // Duplicate check (by Lightning Address)
     final isDuplicate = recipients.any(
       (r) => r.lightningAddress == recipient.lightningAddress,
     );
     
     if (isDuplicate) {
-      return false; // 重複している場合は追加しない
+      return false; // Don't add if duplicate
     }
     
     recipients.add(recipient);
     return await saveCustomRecipients(recipients);
   }
   
-  /// ユーザー定義の寄付先を削除
+  /// Delete user-defined donation recipient
   Future<bool> deleteCustomRecipient(String lightningAddress) async {
     final recipients = getCustomRecipients();
     recipients.removeWhere((r) => r.lightningAddress == lightningAddress);
     return await saveCustomRecipients(recipients);
   }
 }
-

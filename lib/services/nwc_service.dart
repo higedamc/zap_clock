@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import '../bridge_generated.dart/frb_generated.dart';
 import '../bridge_generated.dart/api.dart' as rust_api;
 
-/// NWC (Nostr Wallet Connect) サービス
+/// NWC (Nostr Wallet Connect) service
 /// 
-/// Rust側のNWCクライアントとの橋渡しを行う
+/// Bridge to Rust-side NWC client
 class NwcService {
-  // Rustブリッジの初期化（一度だけ実行）
+  // Initialize Rust bridge (execute only once)
   static Future<void> initialize() async {
     try {
       await RustLib.init();
@@ -16,22 +16,22 @@ class NwcService {
     }
   }
   
-  /// NWC接続をテストして残高を取得
+  /// Test NWC connection and get balance
   Future<int> testConnection(String connectionString) async {
     try {
-      // Rustブリッジを使用（残高を返す）
+      // Use Rust bridge (returns balance)
       final balance = await rust_api.testNwcConnection(
         connectionString: connectionString,
       );
-      debugPrint('✅ NWC接続成功 - 残高: $balance sats');
+      debugPrint('✅ NWC connection successful - balance: $balance sats');
       return balance.toInt();
     } catch (e) {
-      debugPrint('❌ NWC接続失敗: $e');
+      debugPrint('❌ NWC connection failed: $e');
       rethrow;
     }
   }
   
-  /// Lightning Invoiceを支払う（設定された送金先に送金）
+  /// Pay Lightning Invoice (send to configured destination)
   Future<String> payWithNwc({
     required String connectionString,
     required String lightningAddress,
@@ -39,12 +39,12 @@ class NwcService {
     String? comment,
   }) async {
     try {
-      debugPrint('🔄 NWC送金開始: $amountSats sats → $lightningAddress');
+      debugPrint('🔄 Starting NWC payment: $amountSats sats → $lightningAddress');
       if (comment != null) {
-        debugPrint('💬 コメント: $comment');
+        debugPrint('💬 Comment: $comment');
       }
       
-      // Rustブリッジを使用
+      // Use Rust bridge
       final paymentHash = await rust_api.payLightningInvoice(
         connectionString: connectionString,
         lightningAddress: lightningAddress,
@@ -52,15 +52,15 @@ class NwcService {
         comment: comment,
       );
       
-      debugPrint('✅ NWC送金成功: $paymentHash');
+      debugPrint('✅ NWC payment successful: $paymentHash');
       return paymentHash;
     } catch (e) {
-      debugPrint('❌ NWC送金失敗: $e');
-      rethrow; // エラーを上位に伝播
+      debugPrint('❌ NWC payment failed: $e');
+      rethrow; // Propagate error to caller
     }
   }
   
-  /// Lightning Invoiceを支払う（旧メソッド - 互換性のため残す）
+  /// Pay Lightning Invoice (old method - kept for compatibility)
   Future<String> payInvoice({
     required String connectionString,
     required String lightningAddress,
@@ -68,7 +68,7 @@ class NwcService {
     String? comment,
   }) async {
     try {
-      // Rustブリッジを使用
+      // Use Rust bridge
       final paymentHash = await rust_api.payLightningInvoice(
         connectionString: connectionString,
         lightningAddress: lightningAddress,
@@ -77,12 +77,11 @@ class NwcService {
       );
       return paymentHash;
     } catch (e) {
-      // エラー時はモックにフォールバック
+      // Fallback to mock on error
       debugPrint('⚠️ Rust API failed, using mock: $e');
-      debugPrint('⚡ Lightning送金（モック）: $amountSats sats → $lightningAddress');
+      debugPrint('⚡ Lightning payment (mock): $amountSats sats → $lightningAddress');
       await Future.delayed(const Duration(seconds: 2));
       return 'payment_hash_mock_${DateTime.now().millisecondsSinceEpoch}';
     }
   }
 }
-

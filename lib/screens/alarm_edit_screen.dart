@@ -10,9 +10,9 @@ import '../providers/storage_provider.dart';
 import '../services/ringtone_service.dart';
 import '../app_theme.dart';
 
-/// アラーム設定画面
+/// Alarm settings screen
 class AlarmEditScreen extends StatefulWidget {
-  /// 編集対象のアラームID（nullの場合は新規作成）
+  /// Target alarm ID for editing (null for new creation)
   final int? alarmId;
   
   const AlarmEditScreen({super.key, this.alarmId});
@@ -192,7 +192,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// 時刻選択ピッカー
+  /// Time selection picker
   Widget _buildTimePicker(BuildContext context) {
     return InkWell(
       onTap: () => _selectTime(context),
@@ -220,7 +220,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// ラベル入力と音源選択セクション
+  /// Label input and sound selection section
   Widget _buildLabelAndSoundSection() {
     final l10n = AppLocalizations.of(context)!;
     
@@ -290,7 +290,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// 音源を選択
+  /// Select sound
   Future<void> _selectSound() async {
     final l10n = AppLocalizations.of(context)!;
     
@@ -377,7 +377,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// 繰り返し曜日選択
+  /// Repeat day selection
   Widget _buildRepeatDays() {
     final l10n = AppLocalizations.of(context)!;
     final dayNames = [
@@ -421,7 +421,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// 時刻選択ダイアログを表示
+  /// Show time selection dialog
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -450,7 +450,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// アラームを保存
+  /// Save alarm
   Future<void> _saveAlarm(BuildContext context, WidgetRef ref) async {
     try {
       // 送金設定がある場合は、amountSatsとtimeoutSecondsが必須
@@ -507,7 +507,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// 削除確認ダイアログ
+  /// Delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     
@@ -542,7 +542,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// Lightningセクションヘッダー
+  /// Lightning section header
   Widget _buildLightningSectionHeader() {
     final l10n = AppLocalizations.of(context)!;
     
@@ -567,7 +567,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// Lightning設定フィールド（新UI: プリセット選択）
+  /// Lightning settings field (new UI: preset selection)
   Widget _buildLightningSettings() {
     final l10n = AppLocalizations.of(context)!;
     
@@ -683,7 +683,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// プリセットチップを構築
+  /// Build preset chip
   Widget _buildPresetChip({
     required String label,
     required String emoji,
@@ -725,7 +725,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// プリセットのラベルを取得
+  /// Get preset label
   String _getPresetLabel(AppLocalizations l10n, PenaltyPreset preset) {
     switch (preset.nameKey) {
       case 'penaltyPreset15s':
@@ -745,7 +745,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// 選択中の設定の説明を取得
+  /// Get selected setting description
   String _getSelectedDescription(AppLocalizations l10n) {
     if (_selectedPreset == null && !_isCustom) {
       return l10n.noPenaltyDescription;
@@ -758,7 +758,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     return '';
   }
   
-  /// カスタム設定ダイアログを表示
+  /// Show custom settings dialog
   Future<void> _showCustomSettingsDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final timeoutController = TextEditingController(
@@ -858,7 +858,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     amountController.dispose();
   }
   
-  /// 寄付先選択UI
+  /// Donation recipient selection UI
   Widget _buildDonationRecipientPicker(WidgetRef ref) {
     final storage = ref.read(storageServiceProvider);
     final presets = DonationRecipients.presetsSync;
@@ -950,7 +950,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     );
   }
   
-  /// 寄付先選択ダイアログ
+  /// Donation recipient selection dialog
   Future<void> _selectDonationRecipient(WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final storage = ref.read(storageServiceProvider);
@@ -1049,7 +1049,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     }
   }
   
-  /// タイムアウトラベルを取得
+  /// Get timeout label
   String _getTimeoutLabel(AppLocalizations l10n, int seconds) {
     switch (seconds) {
       case 15:
@@ -1070,7 +1070,7 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   }
 }
 
-/// 曜日選択ボタン
+/// Day selection button
 class _DayButton extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -1108,7 +1108,7 @@ class _DayButton extends StatelessWidget {
   }
 }
 
-/// 音源選択の結果
+/// Sound selection result
 class _SoundSelection {
   final String? path;
   final String name;

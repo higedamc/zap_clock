@@ -12,9 +12,9 @@ import '../providers/nwc_provider.dart';
 import '../providers/storage_provider.dart';
 import '../app_theme.dart';
 
-/// アラーム鳴動画面
-/// 将来的にはLightning送金機能を実装予定
-/// 現在は仮のボタンでアラームを停止可能
+/// Alarm ringing screen
+/// Lightning payment functionality planned for future
+/// Currently can stop alarm with temporary button
 class AlarmRingScreen extends StatefulWidget {
   final int alarmId;
   

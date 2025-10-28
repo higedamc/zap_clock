@@ -4,19 +4,19 @@ import '../services/storage_service.dart';
 import '../services/alarm_service.dart';
 import 'storage_provider.dart';
 
-/// AlarmServiceのProvider
+/// AlarmService Provider
 final alarmServiceProvider = Provider<AlarmService>((ref) {
   return AlarmService();
 });
 
-/// アラームリストのStateNotifierProvider
+/// Alarm list StateNotifierProvider
 final alarmListProvider = StateNotifierProvider<AlarmListNotifier, AsyncValue<List<Alarm>>>((ref) {
   final storageService = ref.watch(storageServiceProvider);
   final alarmService = ref.watch(alarmServiceProvider);
   return AlarmListNotifier(storageService, alarmService);
 });
 
-/// アラームリスト管理Notifier
+/// Alarm list management Notifier
 class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
   final StorageService _storageService;
   final AlarmService _alarmService;
@@ -26,12 +26,12 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     loadAlarms();
   }
   
-  /// アラーム一覧を読み込み
+  /// Load alarm list
   Future<void> loadAlarms() async {
     state = const AsyncValue.loading();
     try {
       final alarms = _storageService.getAlarms();
-      // 時刻順にソート
+      // Sort by time
       alarms.sort((a, b) {
         if (a.hour != b.hour) {
           return a.hour.compareTo(b.hour);
@@ -44,7 +44,7 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     }
   }
   
-  /// アラームを追加
+  /// Add an alarm
   Future<void> addAlarm(Alarm alarm) async {
     try {
       await _storageService.addAlarm(alarm);
@@ -55,7 +55,7 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     }
   }
   
-  /// アラームを更新
+  /// Update an alarm
   Future<void> updateAlarm(Alarm alarm) async {
     try {
       await _storageService.updateAlarm(alarm);
@@ -66,7 +66,7 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     }
   }
   
-  /// アラームを削除
+  /// Delete an alarm
   Future<void> deleteAlarm(int alarmId) async {
     try {
       await _storageService.deleteAlarm(alarmId);
@@ -77,7 +77,7 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     }
   }
   
-  /// アラームの有効/無効を切り替え
+  /// Toggle alarm enabled/disabled
   Future<void> toggleAlarm(int alarmId) async {
     final currentState = state;
     if (currentState is! AsyncData<List<Alarm>>) {
@@ -94,7 +94,7 @@ class AlarmListNotifier extends StateNotifier<AsyncValue<List<Alarm>>> {
     }
   }
   
-  /// 次のアラームIDを取得
+  /// Get next alarm ID
   Future<int> getNextAlarmId() async {
     return await _storageService.incrementNextAlarmId();
   }

@@ -1,15 +1,15 @@
-/// ペナルティプリセット（タイムアウトと金額の組み合わせ）
+/// Penalty preset (timeout and amount combination)
 class PenaltyPreset {
-  /// タイムアウト時間（秒）
+  /// Timeout duration (seconds)
   final int timeoutSeconds;
   
-  /// 送金額（sats）
+  /// Payment amount (sats)
   final int amountSats;
   
-  /// 絵文字
+  /// Emoji
   final String emoji;
   
-  /// ローカライズキー（l10nで参照）
+  /// Localization key (referenced in l10n)
   final String nameKey;
   
   const PenaltyPreset({
@@ -19,7 +19,7 @@ class PenaltyPreset {
     required this.nameKey,
   });
   
-  /// プリセット一覧
+  /// Preset list
   static const List<PenaltyPreset> presets = [
     PenaltyPreset(
       timeoutSeconds: 15,
@@ -59,7 +59,7 @@ class PenaltyPreset {
     ),
   ];
   
-  /// カスタムプリセット用の特殊なインスタンス（UI表示用）
+  /// Special instance for custom preset (for UI display)
   static const PenaltyPreset custom = PenaltyPreset(
     timeoutSeconds: -1,
     amountSats: -1,
@@ -67,28 +67,28 @@ class PenaltyPreset {
     nameKey: 'penaltyPresetCustom',
   );
   
-  /// 指定されたtimeoutとamountに最も近いプリセットを取得
-  /// マイグレーション用
+  /// Get preset closest to specified timeout and amount
+  /// For migration
   static PenaltyPreset? findClosestPreset(int? timeoutSeconds, int? amountSats) {
     if (timeoutSeconds == null || amountSats == null) {
       return null;
     }
     
-    // 完全一致を探す
+    // Find exact match
     for (final preset in presets) {
       if (preset.timeoutSeconds == timeoutSeconds && preset.amountSats == amountSats) {
         return preset;
       }
     }
     
-    // タイムアウトが一致するものを探す
+    // Find matching timeout
     for (final preset in presets) {
       if (preset.timeoutSeconds == timeoutSeconds) {
         return preset;
       }
     }
     
-    // 見つからない場合はnull（カスタム扱い）
+    // Return null if not found (treat as custom)
     return null;
   }
   

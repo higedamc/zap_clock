@@ -6,8 +6,8 @@ import '../app_theme.dart';
 import '../providers/storage_provider.dart';
 import '../services/permission_service.dart';
 
-/// オンボーディング画面
-/// 初回起動時にアプリの使い方を説明
+/// Onboarding screen
+/// Explain how to use the app on first launch
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -37,19 +37,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     
     if (!context.mounted) return;
     
-    // オンボーディング完了後に権限をリクエスト
+    // Request permissions after onboarding completion
     await _requestPermissions(context);
     
     if (!context.mounted) return;
     context.go('/');
   }
   
-  /// 権限リクエストを実行
+  /// Execute permission request
   Future<void> _requestPermissions(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final permissionService = PermissionService();
     
-    // 権限リクエストダイアログを表示
+    // Show permission request dialog
     if (!context.mounted) return;
     
     final shouldRequest = await showDialog<bool>(
@@ -69,11 +69,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     
     if (shouldRequest != true) return;
     
-    // 権限をリクエスト
+    // Request permissions
     final results = await permissionService.requestAllPermissions();
     permissionService.logPermissionSummary(results);
     
-    // 権限が拒否された場合、ユーザーに通知
+    // Notify user if permissions are denied
     if (!context.mounted) return;
     final hasAll = await permissionService.hasAllRequiredPermissions();
     if (!hasAll) {
@@ -98,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
-    // ローカライズされたページを生成
+    // Generate localized pages
     final pages = [
       _OnboardingPage(
         icon: Icons.alarm,
@@ -131,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // スキップボタン
+            // Skip button
             if (_currentPage < pages.length - 1)
               Align(
                 alignment: Alignment.topRight,
@@ -147,7 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             else
               const SizedBox(height: 48),
             
-            // ページビュー
+            // Page view
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -159,7 +159,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             
-            // インジケーター
+            // Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -170,7 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             
             const SizedBox(height: 32),
             
-            // ボタン
+            // Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Consumer(
@@ -229,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// オンボーディングページ
+/// Onboarding page
 class _OnboardingPage extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -250,7 +250,7 @@ class _OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // アイコン
+          // Icon
           Container(
             width: 120,
             height: 120,
@@ -267,7 +267,7 @@ class _OnboardingPage extends StatelessWidget {
           
           const SizedBox(height: 48),
           
-          // タイトル
+          // Title
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -279,7 +279,7 @@ class _OnboardingPage extends StatelessWidget {
           
           const SizedBox(height: 24),
           
-          // 説明
+          // Description
           Text(
             description,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(

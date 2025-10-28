@@ -1,17 +1,17 @@
 import 'package:flutter/services.dart';
 
-/// システムアラーム音源を選択するサービス
+/// Service for selecting system alarm sounds
 class RingtoneService {
   static const _channel = MethodChannel('com.zapclock.zap_clock/ringtone');
   
-  /// システムアラーム音源ピッカーを開く
+  /// Open system alarm sound picker
   /// 
-  /// 戻り値：
-  /// - null: キャンセルされた場合
-  /// - Map: 音源が選択された場合
-  ///   - uri: システムのURI文字列
-  ///   - path: ローカルにコピーされたファイルパス（alarmパッケージで使用）
-  ///   - name: 音源の表示名
+  /// Return value:
+  /// - null: Canceled
+  /// - Map: Sound selected
+  ///   - uri: System URI string
+  ///   - path: Local copied file path (used by alarm package)
+  ///   - name: Sound display name
   Future<Map<String, String>?> pickRingtone() async {
     try {
       final result = await _channel.invokeMethod<Map<dynamic, dynamic>>('pickRingtone');
@@ -20,18 +20,18 @@ class RingtoneService {
         return null;
       }
       
-      // dynamic MapをString Mapに変換
+      // Convert dynamic Map to String Map
       return {
         'uri': result['uri'] as String,
         'path': result['path'] as String,
         'name': result['name'] as String,
       };
     } on PlatformException catch (e) {
-      throw Exception('音源の選択に失敗しました: ${e.message}');
+      throw Exception('Failed to select sound: ${e.message}');
     }
   }
   
-  /// URIから音源名を取得
+  /// Get sound name from URI
   Future<String> getRingtoneName(String uri) async {
     try {
       final name = await _channel.invokeMethod<String>(
@@ -40,8 +40,7 @@ class RingtoneService {
       );
       return name ?? 'Unknown';
     } on PlatformException catch (e) {
-      throw Exception('音源名の取得に失敗しました: ${e.message}');
+      throw Exception('Failed to get sound name: ${e.message}');
     }
   }
 }
-

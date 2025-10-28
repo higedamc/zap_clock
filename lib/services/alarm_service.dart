@@ -2,15 +2,15 @@ import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import '../models/alarm.dart' as app_models;
 
-/// アラーム管理サービス
-/// alarmパッケージを使用してアラームをスケジュール
+/// Alarm management service
+/// Schedule alarms using the alarm package
 class AlarmService {
-  /// アラームマネージャーの初期化
+  /// Initialize alarm manager
   static Future<void> initialize() async {
     await Alarm.init();
   }
   
-  /// アラームをスケジュール
+  /// Schedule an alarm
   Future<void> scheduleAlarm(app_models.Alarm alarm) async {
     if (!alarm.isEnabled) {
       await cancelAlarm(alarm.id);
@@ -18,11 +18,11 @@ class AlarmService {
     }
     
     final nextAlarmTime = alarm.getNextAlarmTime();
-    debugPrint('🔔 アラームをスケジュール: ID=${alarm.id}, 時刻=$nextAlarmTime');
+    debugPrint('🔔 Scheduling alarm: ID=${alarm.id}, time=$nextAlarmTime');
     
-    // 音源パスを決定（nullの場合はデフォルト音源を使用）
+    // Determine audio path (use default if null)
     final audioPath = alarm.soundPath ?? 'assets/alarm_sound.mp3';
-    debugPrint('🔊 使用する音源: $audioPath');
+    debugPrint('🔊 Using audio: $audioPath');
     
     final alarmSettings = AlarmSettings(
       id: alarm.id,
@@ -33,50 +33,50 @@ class AlarmService {
       volumeSettings: VolumeSettings.fade(volume: 1.0, fadeDuration: const Duration(seconds: 2)),
       notificationSettings: NotificationSettings(
         title: alarm.label.isNotEmpty ? alarm.label : 'ZapClock',
-        body: 'アラームが鳴っています',
-        stopButton: '停止',
+        body: 'Alarm is ringing',
+        stopButton: 'Stop',
         icon: 'notification_icon',
       ),
       warningNotificationOnKill: true,
-      androidFullScreenIntent: true, // 全画面表示
+      androidFullScreenIntent: true, // Full screen display
     );
     
     await Alarm.set(alarmSettings: alarmSettings);
     
-    // 繰り返しアラームの場合、次回のスケジュールも設定
+    // For recurring alarms, also set next schedule
     if (alarm.hasRepeat) {
-      debugPrint('📅 繰り返しアラームを設定しました');
+      debugPrint('📅 Recurring alarm set');
     }
   }
   
-  /// アラームをキャンセル
+  /// Cancel an alarm
   Future<void> cancelAlarm(int alarmId) async {
-    debugPrint('🔕 アラームをキャンセル: ID=$alarmId');
+    debugPrint('🔕 Canceling alarm: ID=$alarmId');
     await Alarm.stop(alarmId);
   }
   
-  /// 全てのアラームを再スケジュール
+  /// Reschedule all alarms
   Future<void> rescheduleAllAlarms(List<app_models.Alarm> alarms) async {
     for (final alarm in alarms) {
       await scheduleAlarm(alarm);
     }
   }
   
-  /// 現在鳴動中のアラームIDを取得
+  /// Get currently ringing alarm IDs
   Future<List<int>> getRingingAlarmIds() async {
     final alarms = await Alarm.getAlarms();
     return alarms.map((alarm) => alarm.id).toList();
   }
   
-  /// 指定したIDのアラームが鳴動中かチェック
+  /// Check if specified ID alarm is ringing
   Future<bool> isRinging(int alarmId) async {
     final alarms = await Alarm.getAlarms();
     return alarms.any((alarm) => alarm.id == alarmId);
   }
   
-  /// アラームを停止
+  /// Stop an alarm
   Future<void> stopAlarm(int alarmId) async {
-    debugPrint('⏹️ アラームを停止: ID=$alarmId');
+    debugPrint('⏹️ Stopping alarm: ID=$alarmId');
     await Alarm.stop(alarmId);
   }
 }

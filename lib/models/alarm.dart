@@ -1,38 +1,38 @@
-/// アラームのデータモデル
+/// Alarm data model
 class Alarm {
-  /// アラームID（ユニーク）
+  /// Alarm ID (unique)
   final int id;
   
-  /// アラーム時刻（時）
+  /// Alarm time (hour)
   final int hour;
   
-  /// アラーム時刻（分）
+  /// Alarm time (minute)
   final int minute;
   
-  /// 有効/無効
+  /// Enabled/disabled status
   final bool isEnabled;
   
-  /// アラームラベル
+  /// Alarm label
   final String label;
   
-  /// 繰り返し設定（曜日）
-  /// [月, 火, 水, 木, 金, 土, 日]
+  /// Repeat settings (day of week)
+  /// [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
   final List<bool> repeatDays;
   
-  /// 送金額（sats）（NWC送金に使用）
+  /// Payment amount (sats) (used for NWC payment)
   final int? amountSats;
   
-  /// タイムアウト時間（秒）
-  /// この時間が経過すると自動的に送金される
+  /// Timeout duration (seconds)
+  /// Payment is automatically made after this time
   final int? timeoutSeconds;
   
-  /// 送金先Lightning Address（このアラーム固有の送金先）
+  /// Payment destination Lightning Address (specific to this alarm)
   final String? donationRecipient;
   
-  /// アラーム音源のパス（nullの場合はデフォルト音源を使用）
+  /// Alarm sound path (uses default if null)
   final String? soundPath;
   
-  /// アラーム音源の表示名
+  /// Alarm sound display name
   final String? soundName;
   
   Alarm({
@@ -43,25 +43,25 @@ class Alarm {
     this.label = '',
     List<bool>? repeatDays,
     this.amountSats,
-    this.timeoutSeconds = 300, // デフォルト5分=300秒
+    this.timeoutSeconds = 300, // Default 5 minutes = 300 seconds
     this.donationRecipient,
     this.soundPath,
     this.soundName,
   }) : repeatDays = repeatDays ?? List.filled(7, false);
   
-  /// 時刻を文字列で取得（例: "07:30"）
+  /// Get time as string (e.g., "07:30")
   String get timeString {
     final h = hour.toString().padLeft(2, '0');
     final m = minute.toString().padLeft(2, '0');
     return '$h:$m';
   }
   
-  /// 繰り返しが設定されているか
+  /// Check if repeat is set
   bool get hasRepeat {
     return repeatDays.any((day) => day);
   }
   
-  /// 繰り返し曜日を日本語文字列で取得
+  /// Get repeat days as Japanese string
   /// @deprecated Use getRepeatDaysString(l10n) instead for proper localization
   String get repeatDaysString {
     if (!hasRepeat) {
@@ -77,19 +77,19 @@ class Alarm {
       }
     }
     
-    // 全曜日が選択されている場合
+    // All days selected
     if (selectedDays.length == 7) {
       return '毎日';
     }
     
-    // 平日のみ
+    // Weekdays only
     if (selectedDays.length == 5 && 
         repeatDays[0] && repeatDays[1] && repeatDays[2] && 
         repeatDays[3] && repeatDays[4]) {
       return '平日';
     }
     
-    // 週末のみ
+    // Weekends only
     if (selectedDays.length == 2 && repeatDays[5] && repeatDays[6]) {
       return '週末';
     }
@@ -97,7 +97,7 @@ class Alarm {
     return selectedDays.join(', ');
   }
   
-  /// 繰り返し曜日をローカライズされた文字列で取得
+  /// Get repeat days as localized string
   String getRepeatDaysString(dynamic l10n) {
     if (!hasRepeat) {
       return l10n.onceOnly;
@@ -120,19 +120,19 @@ class Alarm {
       }
     }
     
-    // 全曜日が選択されている場合
+    // All days selected
     if (selectedDays.length == 7) {
       return l10n.everyday;
     }
     
-    // 平日のみ
+    // Weekdays only
     if (selectedDays.length == 5 && 
         repeatDays[0] && repeatDays[1] && repeatDays[2] && 
         repeatDays[3] && repeatDays[4]) {
       return l10n.weekdays;
     }
     
-    // 週末のみ
+    // Weekends only
     if (selectedDays.length == 2 && repeatDays[5] && repeatDays[6]) {
       return l10n.weekend;
     }
@@ -140,24 +140,24 @@ class Alarm {
     return selectedDays.join(', ');
   }
   
-  /// 次回のアラーム発火時刻を取得
+  /// Get next alarm trigger time
   DateTime getNextAlarmTime() {
     final now = DateTime.now();
     var next = DateTime(now.year, now.month, now.day, hour, minute);
     
-    // 繰り返しが設定されていない場合
+    // If no repeat is set
     if (!hasRepeat) {
-      // 今日の時刻がすでに過ぎていたら明日
+      // If time has already passed today, set to tomorrow
       if (next.isBefore(now)) {
         next = next.add(const Duration(days: 1));
       }
       return next;
     }
     
-    // 繰り返しが設定されている場合、次に該当する曜日を探す
+    // If repeat is set, find next matching day
     for (int i = 0; i < 8; i++) {
       final checkDate = next.add(Duration(days: i));
-      final weekday = (checkDate.weekday - 1) % 7; // 月曜=0, 日曜=6に変換
+      final weekday = (checkDate.weekday - 1) % 7; // Convert Monday=0, Sunday=6
       
       if (repeatDays[weekday] && checkDate.isAfter(now)) {
         return checkDate;
@@ -167,7 +167,7 @@ class Alarm {
     return next;
   }
   
-  /// JSON形式に変換（SharedPreferences保存用）
+  /// Convert to JSON (for SharedPreferences)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -184,9 +184,9 @@ class Alarm {
     };
   }
   
-  /// JSONから復元
+  /// Restore from JSON
   factory Alarm.fromJson(Map<String, dynamic> json) {
-    // 後方互換性：timeoutMinutesが存在する場合は秒に変換
+    // Backward compatibility: convert timeoutMinutes to seconds if exists
     int? timeoutSecs = json['timeoutSeconds'] as int?;
     if (timeoutSecs == null && json['timeoutMinutes'] != null) {
       timeoutSecs = (json['timeoutMinutes'] as int) * 60;
@@ -207,7 +207,7 @@ class Alarm {
     );
   }
   
-  /// コピーメソッド（値の一部を変更した新しいインスタンスを作成）
+  /// Copy method (create new instance with some values modified)
   Alarm copyWith({
     int? id,
     int? hour,

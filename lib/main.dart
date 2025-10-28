@@ -19,22 +19,22 @@ import 'l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // AlarmServiceの初期化
+  // Initialize AlarmService
   await AlarmService.initialize();
   
-  // Rust Bridgeの初期化
+  // Initialize Rust Bridge
   await NwcService.initialize();
   
-  // 寄付先リストのロード
+  // Load donation recipient list
   await DonationRecipients.loadFromAssets();
   
-  // SharedPreferencesの初期化
+  // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   
   runApp(
     ProviderScope(
       overrides: [
-        // SharedPreferencesをProviderにオーバーライド
+        // Override SharedPreferences in Provider
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: const MyApp(),
@@ -56,16 +56,16 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     
-    // GoRouterの初期化
+    // Initialize GoRouter
     _router = GoRouter(
       routes: [
         GoRoute(
           path: '/',
           builder: (context, state) {
-            // 初回起動チェック
+            // Check if first launch
             final storage = ref.read(storageServiceProvider);
             if (!storage.hasCompletedOnboarding()) {
-              // 初回起動時はオンボーディング画面へリダイレクト
+              // Redirect to onboarding screen on first launch
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
                   context.go('/onboarding');
@@ -104,17 +104,17 @@ class _MyAppState extends ConsumerState<MyApp> {
       ],
     );
     
-    // アラームのリングイベントをリスニング
+    // Listen for alarm ring events
     Alarm.ringing.listen((alarmSet) {
       if (alarmSet.alarms.isNotEmpty) {
         final alarmSettings = alarmSet.alarms.first;
-        debugPrint('🚨 アラームが鳴動開始: ID=${alarmSettings.id}');
+        debugPrint('🚨 Alarm started ringing: ID=${alarmSettings.id}');
         _navigateToRingScreen(alarmSettings.id);
       }
     });
   }
 
-  /// アラーム鳴動画面に遷移
+  /// Navigate to alarm ring screen
   void _navigateToRingScreen(int alarmId) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -130,7 +130,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: AppTheme.lightTheme,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
-      // ローカライゼーション設定
+      // Localization settings
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

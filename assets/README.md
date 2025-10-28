@@ -8,7 +8,7 @@ Place an audio file named `alarm_sound.mp3` in this directory.
 
 - **Format**: MP3
 - **Filename**: `alarm_sound.mp3` (strictly enforced)
-- **Duration**: 10-30 seconds approximately
+- **Duration**: Approximately 10-30 seconds
 - **Volume**: Moderate volume (played at 0.8x in the app)
 
 ### How to Obtain Audio File
