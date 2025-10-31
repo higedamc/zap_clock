@@ -18,6 +18,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2025-11-01
+
+🔓 **Lock Screen & Background Countdown Update**
+
+This patch release adds critical improvements for lock screen alarm display and background countdown functionality.
+
+### Added
+- 🔓 **Lock Screen Alarm Display** (Android 10+)
+  - Full Screen Intent permission support
+  - Automatic alarm screen display even when device is locked
+  - No need to tap notification - alarm screen appears automatically
+  - Native permission check via MethodChannel
+  - Settings UI for permission status and configuration
+  - Recognized as default clock app by Android system
+
+- ⏱️ **Background Countdown Service**
+  - Automatic countdown starts when alarm triggers (no user interaction needed)
+  - Countdown persists in background using SharedPreferences
+  - Automatic Zap execution when timeout is reached
+  - UI syncs with background countdown in real-time
+  - Manual stop option cancels background countdown
+
+- 🕐 **AlarmClock Intent Support**
+  - Handles SET_ALARM, SHOW_ALARMS, DISMISS_ALARM, SNOOZE_ALARM intents
+  - Makes ZapClock recognizable as a clock app by Android system
+  - Better integration with Android's alarm management
+
+### Changed
+- Enhanced permission management system with Full Screen Intent support
+- Improved alarm ring screen to sync with background countdown
+- Updated onboarding flow to request Full Screen Intent permission
+
+### Fixed
+- 🐛 **Countdown Display Bug on Lock Screen**
+  - Fixed countdown timer showing "00:00" initially when alarm triggers on lock screen
+  - Added fallback mechanism when background countdown data is not yet available
+  - Improved AlarmCountdownService to cache timeout values in memory
+  - Enhanced UI to display correct timeout value immediately on screen load
+  - Optimized SharedPreferences access with memory caching
+
+### Technical
+- Added AlarmCountdownService for background countdown management
+- Implemented MethodChannel communication between Flutter and Kotlin
+- Enhanced MainActivity.kt with Full Screen Intent permission handling
+- Updated AndroidManifest.xml with AlarmClock intent filters
+- Improved countdown synchronization with memory caching for better performance
+- Added detailed debug logging for countdown service
+
+---
+
 ## [1.0.0] - 2025-10-31
 
 🎉 **First Public Release!** 🎉
@@ -190,6 +240,7 @@ This is the first public release of ZapClock, available on ZapStore!
 
 ---
 
-[Unreleased]: https://github.com/higedamc/zap_clock/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/higedamc/zap_clock/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/higedamc/zap_clock/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/higedamc/zap_clock/releases/tag/v1.0.0
 [0.9.0]: https://github.com/higedamc/zap_clock/releases/tag/v0.9.0
