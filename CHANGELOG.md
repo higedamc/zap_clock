@@ -188,3 +188,8 @@ This is the first public release of ZapClock, available on ZapStore!
 - [ ] Payment history display
 - [ ] Multiple NWC connection profile management
 
+---
+
+[Unreleased]: https://github.com/higedamc/zap_clock/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/higedamc/zap_clock/releases/tag/v1.0.0
+[0.9.0]: https://github.com/higedamc/zap_clock/releases/tag/v0.9.0
