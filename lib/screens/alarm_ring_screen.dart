@@ -6,10 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:alarm/alarm.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart' as app_models;
-import '../models/donation_recipient.dart';
 import '../providers/alarm_provider.dart';
-import '../providers/nwc_provider.dart';
 import '../providers/storage_provider.dart';
+import '../services/alarm_countdown_service.dart';
 import '../app_theme.dart';
 
 /// Alarm ringing screen
@@ -31,9 +30,9 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   app_models.Alarm? _alarm;
   bool _isProcessingPayment = false;
   String? _paymentError;
-  Timer? _autoPaymentTimer;
   Timer? _updateTimer;
   int _remainingSeconds = 0; // 初期値は0、アラーム読み込み時に設定
+  final _countdownService = AlarmCountdownService();
   
   @override
   void initState() {
@@ -59,7 +58,6 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _autoPaymentTimer?.cancel();
     _updateTimer?.cancel();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -68,114 +66,55 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     super.dispose();
   }
   
-  /// 自動送金タイマーを開始
-  void _startAutoPaymentTimer(WidgetRef ref) {
-    // 送金設定がある場合のみタイマーを開始
+  /// バックグラウンドカウントダウンと同期
+  void _syncWithBackgroundCountdown(WidgetRef ref) async {
+    // 送金設定がない場合はカウントダウン不要
     if (_alarm?.amountSats == null) return;
     
-    final timeoutSeconds = _alarm?.timeoutSeconds ?? 300;
-    _remainingSeconds = timeoutSeconds;
+    // バックグラウンドで既に開始されているカウントダウンから残り時間を取得
+    final remainingSeconds = await _countdownService.getRemainingSeconds(widget.alarmId);
+    
+    if (remainingSeconds == null) {
+      debugPrint('⚠️ バックグラウンドカウントダウンが見つかりません');
+      return;
+    }
+    
+    if (!mounted) return;
+    
+    setState(() {
+      _remainingSeconds = remainingSeconds;
+    });
+    
+    debugPrint('⏱️ バックグラウンドカウントダウンと同期: 残り${_remainingSeconds}秒');
     
     // 1秒ごとに残り時間を更新
-    _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (!mounted) {
         timer.cancel();
         return;
       }
       
-      setState(() {
-        _remainingSeconds--;
-      });
+      // バックグラウンドの残り時間を取得
+      final remaining = await _countdownService.getRemainingSeconds(widget.alarmId);
       
-      if (_remainingSeconds <= 0) {
+      if (remaining == null || remaining <= 0) {
         timer.cancel();
-      }
-    });
-    
-    // 指定時間後に自動送金
-    _autoPaymentTimer = Timer(Duration(seconds: timeoutSeconds), () {
-      if (!mounted) return;
-      debugPrint('⏰ タイムアウト：自動送金を実行します');
-      _executeAutoPayment(context, ref);
-    });
-    
-    debugPrint('⏱️ 自動送金タイマー開始：$timeoutSeconds秒後に実行');
-  }
-  
-  /// 自動送金を実行
-  Future<void> _executeAutoPayment(BuildContext context, WidgetRef ref) async {
-    if (_isProcessingPayment) {
-      debugPrint('⚠️ すでに送金処理中です');
-      return;
-    }
-    
-    if (!mounted) {
-      debugPrint('⚠️ widgetがアンマウントされています');
-      return;
-    }
-    
-    debugPrint('🔔 タイムアウト：自動送金を試み、その後アラームを停止します');
-    
-    setState(() {
-      _isProcessingPayment = true;
-      _paymentError = null;
-    });
-    
-    try {
-      // グローバルNWC接続文字列を取得
-      final storage = ref.read(storageServiceProvider);
-      final nwcConnection = storage.getGlobalNwcConnection();
-      
-      if (nwcConnection == null || nwcConnection.isEmpty) {
-        debugPrint('⚠️ NWC接続が設定されていません');
-        // NWC設定がなくてもアラームは停止
         if (mounted) {
-          await _stopAlarmAndCloseScreen(context, ref);
+          setState(() {
+            _remainingSeconds = 0;
+          });
         }
         return;
       }
       
-      // 送金先を取得
-      // 1. アラーム固有の寄付先 → 2. グローバル設定 → 3. デフォルト
-      final recipientAddress = _alarm!.donationRecipient 
-          ?? storage.getDonationRecipient() 
-          ?? DonationRecipients.defaultRecipientSync.lightningAddress;
-      
-      debugPrint('💳 NWC経由で送金を開始します...');
-      debugPrint('📍 送金先: $recipientAddress');
-      
-      // Lightning送金を実行（NWC経由）
-      final nwcService = ref.read(nwcServiceProvider);
-      final paymentHash = await nwcService.payWithNwc(
-        connectionString: nwcConnection,
-        lightningAddress: recipientAddress,
-        amountSats: _alarm!.amountSats!,
-        comment: 'donation from ZapClock',
-      );
-      
-      debugPrint('✅ 送金成功: $paymentHash');
-      debugPrint('🔔 アラームを停止します...');
-      
-      // 送金成功したらアラームを停止
       if (mounted) {
-        await _stopAlarmAndCloseScreen(context, ref);
-        debugPrint('✅ アラーム停止完了');
-      } else {
-        debugPrint('⚠️ アラーム停止時にwidgetがアンマウントされていました');
+        setState(() {
+          _remainingSeconds = remaining;
+        });
       }
-    } catch (e) {
-      debugPrint('❌ 送金エラー: $e');
-      debugPrint('⚠️ 送金失敗しましたが、タイムアウトのためアラームを停止します');
-      
-      // タイムアウト時は送金失敗してもアラームを停止
-      if (mounted) {
-        await _stopAlarmAndCloseScreen(context, ref);
-        debugPrint('✅ アラーム停止完了（送金失敗）');
-      } else {
-        debugPrint('⚠️ アラーム停止時にwidgetがアンマウントされていました');
-      }
-    }
+    });
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -192,10 +131,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
               try {
                 _alarm = alarms.firstWhere((a) => a.id == widget.alarmId);
                 
-                // 自動送金タイマーを開始（初回のみ）
-                if (_autoPaymentTimer == null) {
+                // バックグラウンドカウントダウンと同期（初回のみ）
+                if (_updateTimer == null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _startAutoPaymentTimer(ref);
+                    _syncWithBackgroundCountdown(ref);
                   });
                 }
               } catch (e) {
@@ -460,8 +399,8 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         onPressed: _isProcessingPayment
             ? null
             : () {
-                // タイマーをキャンセル
-                _autoPaymentTimer?.cancel();
+                // バックグラウンドカウントダウンをキャンセル
+                _countdownService.stopCountdown(widget.alarmId);
                 _updateTimer?.cancel();
                 
                 // アラームを停止（送金なし）
@@ -504,6 +443,9 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     WidgetRef ref,
   ) async {
     debugPrint('🛑 _stopAlarmAndCloseScreen開始');
+    
+    // バックグラウンドカウントダウンを停止
+    _countdownService.stopCountdown(widget.alarmId);
     
     // アラームを停止
     debugPrint('🔕 Alarm.stopを呼び出します: ID=${widget.alarmId}');

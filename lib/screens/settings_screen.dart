@@ -307,6 +307,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
           
           const SizedBox(height: 16),
           
+          // Full Screen Intent permission (Android 10+)
+          FutureBuilder<bool>(
+            future: PermissionService().canUseFullScreenIntent(),
+            builder: (context, snapshot) {
+              final canUse = snapshot.data ?? false;
+              final color = canUse ? AppTheme.successColor : AppTheme.errorColor;
+              final statusText = canUse ? l10n.permitted : '設定が必要';
+              final statusIcon = canUse ? Icons.check_circle : Icons.warning;
+              
+              return InkWell(
+                onTap: canUse ? null : () async {
+                  await PermissionService().openFullScreenIntentSettings();
+                  setState(() {});
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: canUse 
+                          ? AppTheme.successColor.withValues(alpha: 0.3)
+                          : AppTheme.errorColor.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.phone_locked, color: color),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '画面ロック中の表示',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'ロック画面でアラームを全画面表示（Android 10+）',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        children: [
+                          Icon(statusIcon, color: color, size: 20),
+                          const SizedBox(height: 4),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
           // すべての権限をリクエスト
           SizedBox(
             width: double.infinity,

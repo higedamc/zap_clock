@@ -1,10 +1,14 @@
 package com.zapclock.zap_clock
 
 import android.app.Activity
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,12 +17,52 @@ import java.io.FileOutputStream
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.zapclock.zap_clock/ringtone"
+    private val PERMISSION_CHANNEL = "com.zapclock.zap_clock/permission"
     private val RINGTONE_PICKER_REQUEST = 100
     private var pendingResult: MethodChannel.Result? = null
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleAlarmClockIntent(intent)
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleAlarmClockIntent(intent)
+    }
+    
+    /**
+     * Handle AlarmClock intents (SET_ALARM, SHOW_ALARMS, etc.)
+     * This makes the app recognizable as a clock app by the system
+     */
+    private fun handleAlarmClockIntent(intent: Intent?) {
+        when (intent?.action) {
+            "android.intent.action.SET_ALARM" -> {
+                // Handle SET_ALARM intent
+                // For now, just open the app's main screen
+                // In the future, could pre-populate alarm settings from intent extras
+                android.util.Log.d("ZapClock", "Received SET_ALARM intent")
+            }
+            "android.intent.action.SHOW_ALARMS" -> {
+                // Handle SHOW_ALARMS intent
+                // Just open the app's alarm list screen (default behavior)
+                android.util.Log.d("ZapClock", "Received SHOW_ALARMS intent")
+            }
+            "android.intent.action.DISMISS_ALARM" -> {
+                // Handle DISMISS_ALARM intent
+                android.util.Log.d("ZapClock", "Received DISMISS_ALARM intent")
+            }
+            "android.intent.action.SNOOZE_ALARM" -> {
+                // Handle SNOOZE_ALARM intent
+                android.util.Log.d("ZapClock", "Received SNOOZE_ALARM intent")
+            }
+        }
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
+        // Ringtone picker channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickRingtone" -> {
@@ -31,6 +75,22 @@ class MainActivity : FlutterActivity() {
                     } else {
                         result.error("INVALID_ARGUMENT", "URI is null", null)
                     }
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+        
+        // Permission channel (Full Screen Intent permission for Android 10+)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PERMISSION_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "canUseFullScreenIntent" -> {
+                    result.success(canUseFullScreenIntent())
+                }
+                "openFullScreenIntentSettings" -> {
+                    openFullScreenIntentSettings()
+                    result.success(true)
                 }
                 else -> {
                     result.notImplemented()
@@ -110,6 +170,46 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+    
+    /**
+     * Check if app can use Full Screen Intent (for displaying alarm screen over lock screen)
+     * Android 10+ requires explicit permission
+     */
+    private fun canUseFullScreenIntent(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.canUseFullScreenIntent()
+        } else {
+            // Android 9 and below don't require this permission
+            true
+        }
+    }
+    
+    /**
+     * Open system settings to grant Full Screen Intent permission
+     * User needs to enable "Display over other apps" or similar permission
+     */
+    private fun openFullScreenIntentSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                // Try to open the exact setting for Full Screen Intent
+                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                // Fallback: open general app settings
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e2: Exception) {
+                    e2.printStackTrace()
+                }
+            }
         }
     }
 }

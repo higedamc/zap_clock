@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Permission management service
 /// Request and check various permissions required by the app
 class PermissionService {
+  static const _permissionChannel = MethodChannel('com.zapclock.zap_clock/permission');
   /// Request all required permissions
   /// Call after onboarding completion
   Future<Map<Permission, PermissionStatus>> requestAllPermissions() async {
@@ -51,6 +53,15 @@ class PermissionService {
       debugPrint('⚠️ Storage permission request error: $e');
     }
     
+    // 5. Check Full Screen Intent permission (Android 10+)
+    // This cannot be requested directly, only checked
+    try {
+      final canUse = await canUseFullScreenIntent();
+      debugPrint('🔓 Full Screen Intent permission: ${canUse ? "granted" : "not granted"}');
+    } catch (e) {
+      debugPrint('⚠️ Full Screen Intent check error: $e');
+    }
+    
     debugPrint('✅ Permission request completed');
     return results;
   }
@@ -96,5 +107,28 @@ class PermissionService {
       debugPrint('$emoji ${permission.toString()}: ${status.name}');
     });
     debugPrint('=======================================');
+  }
+  
+  /// Check if app can use Full Screen Intent (Android 10+)
+  /// This is required to show alarm screen over lock screen
+  Future<bool> canUseFullScreenIntent() async {
+    try {
+      final result = await _permissionChannel.invokeMethod<bool>('canUseFullScreenIntent');
+      return result ?? false;
+    } catch (e) {
+      debugPrint('⚠️ Failed to check Full Screen Intent permission: $e');
+      return false;
+    }
+  }
+  
+  /// Open system settings to grant Full Screen Intent permission
+  /// User needs to manually enable this in Android settings
+  Future<void> openFullScreenIntentSettings() async {
+    try {
+      await _permissionChannel.invokeMethod('openFullScreenIntentSettings');
+      debugPrint('⚙️ Opened Full Screen Intent settings');
+    } catch (e) {
+      debugPrint('⚠️ Failed to open Full Screen Intent settings: $e');
+    }
   }
 }

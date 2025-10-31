@@ -73,6 +73,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final results = await permissionService.requestAllPermissions();
     permissionService.logPermissionSummary(results);
     
+    // Check Full Screen Intent permission (Android 10+)
+    final canUseFullScreen = await permissionService.canUseFullScreenIntent();
+    if (!canUseFullScreen) {
+      if (!context.mounted) return;
+      await _showFullScreenIntentPermissionDialog(context, permissionService);
+    }
+    
     // Notify user if permissions are denied
     if (!context.mounted) return;
     final hasAll = await permissionService.hasAllRequiredPermissions();
@@ -91,6 +98,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ],
         ),
       );
+    }
+  }
+  
+  /// Show Full Screen Intent permission dialog
+  Future<void> _showFullScreenIntentPermissionDialog(
+    BuildContext context,
+    PermissionService permissionService,
+  ) async {
+    if (!context.mounted) return;
+    
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('画面ロック中のアラーム表示'),
+        content: const Text(
+          '画面がロックされている状態でもアラームを全画面表示するために、\n'
+          '「画面上に重ねて表示（Full Screen Intent）」の権限が必要です。\n\n'
+          '次の画面で「ZapClock」を探し、権限を有効にしてください。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('スキップ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('設定を開く'),
+          ),
+        ],
+      ),
+    );
+    
+    if (shouldOpen == true) {
+      await permissionService.openFullScreenIntentSettings();
     }
   }
 
