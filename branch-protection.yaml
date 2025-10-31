@@ -1,0 +1,87 @@
+# ZapClock Branch Protection Rules (Lightweight - Solo Developer)
+# GitHub Repository Ruleset Configuration
+#
+# This is a lightweight configuration suitable for solo development.
+# It protects against accidental deletions and ensures CI/CD checks pass,
+# without requiring code reviews or signed commits.
+#
+# To apply this ruleset:
+# 1. Go to GitHub repository Settings > Rules > Rulesets
+# 2. Click "New ruleset" > "New branch ruleset"
+# 3. Use the settings below as reference
+#
+# When your team grows, consider adding:
+# - Pull request approval requirements
+# - Code owner reviews (CODEOWNERS file)
+# - Signed commit requirements
+
+name: Branch Protection (Lightweight)
+target: branch
+enforcement: active
+
+# Branch targeting
+conditions:
+  ref_name:
+    # Protected branches
+    include:
+      - refs/heads/main
+      - refs/heads/develop
+    
+    # Emergency hotfix branches can bypass some rules
+    exclude:
+      - refs/heads/hotfix/**
+      - refs/heads/fix/*/hotfix*
+      - refs/heads/emergency/**
+
+# Protection rules
+rules:
+  # Prevent branch deletion
+  # This protects against accidentally deleting main/develop branches
+  - type: deletion
+  
+  # Required status checks (CI/CD)
+  # Ensures code quality before merging
+  - type: required_status_checks
+    parameters:
+      # Do not require branches to be up to date before merging
+      # This allows faster iteration for solo development
+      strict_required_status_checks_policy: false
+      
+      # Enforce status checks even on branch creation
+      do_not_enforce_on_create: false
+      
+      # Required CI/CD checks that must pass
+      required_status_checks:
+        # Flutter tests
+        - context: flutter-test
+        
+        # Rust tests
+        - context: rust-test
+        
+        # Build verification
+        - context: build-android
+        
+        # Linting
+        - context: flutter-analyze
+        
+        # Add your security scanning tool here when needed
+        # Example: Aikido Security, Snyk, etc.
+        # - context: "Security Scan"
+
+# Bypass actors (optional)
+# Currently empty for solo development
+bypass_actors: []
+
+# Future enhancements (uncomment when team grows):
+#
+# - type: pull_request
+#   parameters:
+#     required_approving_review_count: 1
+#     require_code_owner_review: true
+#     allowed_merge_methods:
+#       - merge
+#       - squash
+#       - rebase
+#
+# - type: required_signatures
+

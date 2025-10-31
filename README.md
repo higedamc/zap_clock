@@ -4,14 +4,14 @@
 
 ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alarm stops only after you send a specified amount via Lightning. With the compelling force of "pay to wake up," you'll never oversleep again!
 
-**✨ Version 1.0.0 - Now Available on ZapStore! ✨**
+**✨ Version 1.0.1 - Now Available on ZapStore! ✨**
 
 [📱 Download on ZapStore](https://zapstore.dev/) | [🐙 GitHub Repository](https://github.com/higedamc/zap_clock)
 
 <br>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen?logo=github" />
+  <img src="https://img.shields.io/badge/Version-1.0.1-brightgreen?logo=github" />
   <img src="https://img.shields.io/badge/ZapStore-Available-ff6b35?logo=zapstore" />
   <img src="https://img.shields.io/badge/Flutter-3.9.2-02569B?logo=flutter" />
   <img src="https://img.shields.io/badge/Rust-1.75-orange?logo=rust" />
@@ -390,9 +390,9 @@ The logging system provides:
 
 ## 🎉 Production Ready
 
-ZapClock v1.0.0 is now production-ready with all core features fully implemented and tested!
+ZapClock v1.0.1 is now production-ready with all core features fully implemented and tested!
 
-**This is the first public release available on ZapStore!**
+**Now available on ZapStore with lock screen alarm display and background countdown!**
 
 ### What's Working
 - ✅ Alarm functionality with precise timing
