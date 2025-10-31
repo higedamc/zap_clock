@@ -4,19 +4,21 @@
 
 ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alarm stops only after you send a specified amount via Lightning. With the compelling force of "pay to wake up," you'll never oversleep again!
 
-**✨ Version 1.0.0 - First Public Release! ✨**
+**✨ Version 1.0.0 - Now Available on ZapStore! ✨**
+
+[📱 Download on ZapStore](https://zapstore.dev/) | [🐙 GitHub Repository](https://github.com/higedamc/zap_clock)
 
 <br>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen?logo=github" />
+  <img src="https://img.shields.io/badge/ZapStore-Available-ff6b35?logo=zapstore" />
   <img src="https://img.shields.io/badge/Flutter-3.9.2-02569B?logo=flutter" />
   <img src="https://img.shields.io/badge/Rust-1.75-orange?logo=rust" />
   <img src="https://img.shields.io/badge/Lightning-Enabled-yellow?logo=lightning" />
   <img src="https://img.shields.io/badge/Nostr-NWC-purple?logo=nostr" />
   <img src="https://img.shields.io/badge/i18n-EN%20%7C%20JA-blue" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
-  <img src="https://img.shields.io/badge/Status-Production%20Ready-success" />
 </p>
 
 ---
@@ -211,14 +213,26 @@ fvm flutter build apk --release
 
 ---
 
-## 📱 Publishing on ZapStore
+## 📱 Available on ZapStore
 
-ZapClock is available (planned) on ZapStore, a Nostr-based app store.
+🎉 **ZapClock is now available on ZapStore**, a Nostr-based app store!
 
 ### For Users
-1. Install [ZapStore](https://zapstore.dev/)
-2. Search for "ZapClock"
+
+**Download ZapClock Now:**
+
+1. Install [ZapStore](https://zapstore.dev/) if you haven't already
+2. Open ZapStore and search for "**ZapClock**"
 3. Tap the install button
+4. Start waking up with Lightning! ⚡
+
+### What is ZapStore?
+
+ZapStore is a decentralized app store built on Nostr, offering:
+- 🔐 Cryptographic verification of apps
+- 🌐 Censorship-resistant distribution
+- ⚡ Lightning Network integration
+- 🆓 Free and open-source
 
 ### For Developers
 
@@ -461,10 +475,11 @@ For complete implementation details, refer to:
 - [ ] iOS support
 - [ ] Additional language support
 
-### Phase 6: ZapStore Release & Growth 🚀 (Ready to Launch!)
+### Phase 6: ZapStore Release & Growth 🚀 (Released!)
 - [x] Screenshots prepared
 - [x] Metadata updated (zapstore.yaml)
 - [x] Documentation complete
+- [x] **Published to ZapStore!** 🎉
 - [ ] Community feedback and iteration
 - [ ] Marketing and user acquisition
 
