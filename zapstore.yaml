@@ -1,136 +1,107 @@
 # ZapStore App Manifest
-# https://zapstore.dev/docs
+# Official format: https://zapstore.dev/docs/publish
 
-# アプリケーション基本情報
-name: "ZapClock"
-identifier: "com.zapclock.zap_clock"
-version: "1.0.0"
-versionCode: 1
-
-# アプリの説明
-description:
-  short: "Lightning送金で停止するアラームアプリ"
-  full: |
-    ZapClockは、Bitcoin Lightningネットワークを活用した革新的なアラームアプリです。
-    
-    🚨 特徴:
-    - 指定した金額のLightningを送金するとアラームが止まる
-    - Nostr Wallet Connect (NWC) 対応
-    - 通常のアラームとしても使用可能
-    - 繰り返しアラーム機能
-    - シンプルで使いやすいUI
-    
-    ⚡ 技術仕様:
-    - Nostr Wallet Connect (NWC) 統合
-    - Lightning Address 対応
-    - LNURL-pay サポート
-    - Rust + Flutter で構築
-    
-    Bitcoin/Nostrエコシステムに馴染んだ、実用的なアラームアプリケーションです。
-
-# カテゴリ
-category: "Utilities"
-tags:
-  - "bitcoin"
-  - "lightning"
-  - "nostr"
-  - "alarm"
-  - "productivity"
-  - "nwc"
-
-# 開発者情報
-developer:
-  name: "ZapClock Team"
-  # Nostr公開鍵 (npub形式または16進数)
-  # pubkey: "npub1..."
-  # または
-  # pubkey: "hex..."
+# Application Information
+name: ZapClock
+summary: Wake up and support the community with Lightning payments
+description: |
+  ZapClock is a funny alarm app powered by the Bitcoin Lightning Network.
+  The alarm can only be stopped by sending a Lightning payment - a unique way to start your day by supporting the Bitcoin/Nostr community!
   
-  # 連絡先（オプション）
-  # email: "contact@zapclock.app"
-  # website: "https://zapclock.app"
-  # nostr: "npub1..."
-
-# ソースコード（オプション）
-# source:
-#   repository: "https://github.com/yourusername/zap_clock"
-#   license: "MIT"
-
-# スクリーンショット（相対パスまたはURL）
-# ZapStoreにアップロードする場合は、プロジェクト内に配置
-screenshots:
-  - "screenshots/01_alarm_list.png"
-  - "screenshots/02_alarm_edit.png"
-  - "screenshots/03_alarm_ring.png"
-  - "screenshots/04_settings.png"
-
-# アプリアイコン
-icon: "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
-
-# 必要な権限
-permissions:
-  - "VIBRATE"
-  - "RECEIVE_BOOT_COMPLETED"
-  - "WAKE_LOCK"
-  - "USE_FULL_SCREEN_INTENT"
-  - "SCHEDULE_EXACT_ALARM"
-  - "POST_NOTIFICATIONS"
-  - "INTERNET"
-  - "ACCESS_NETWORK_STATE"
-
-# 対象プラットフォーム
-platforms:
-  android:
-    minSdkVersion: 23
-    targetSdkVersion: 34
-    # APKファイルのパス（ビルド後に更新）
-    # apk: "build/app/outputs/flutter-apk/app-release.apk"
-    # APKのSHA256ハッシュ（ビルド後に更新）
-    # apkHash: ""
-
-# 年齢制限
-ageRating: "3+"
-
-# サポート情報
-support:
-  # issues: "https://github.com/yourusername/zap_clock/issues"
-  # documentation: "https://zapclock.app/docs"
-  # faq: "https://zapclock.app/faq"
-
-# 変更履歴
-changelog: |
-  ## v1.0.0 (Initial Release)
-  - ⚡ Lightning送金でアラームを停止する機能
-  - 🔗 Nostr Wallet Connect (NWC) 統合
-  - ⏰ 基本的なアラーム機能（時刻設定、繰り返し、ラベル）
-  - 🎵 カスタムアラーム音
-  - 📳 バイブレーション対応
-  - 🌙 ダークテーマ対応
-  - 📱 マテリアルデザイン3対応
-
-# プライバシーポリシー
-privacy:
-  description: |
-    ZapClockは、以下のデータを収集・保存します：
-    
-    - アラーム設定（時刻、ラベル、繰り返し設定）
-    - Nostr Wallet Connect 接続文字列（ローカルにのみ保存）
-    - Lightning アドレスと送金額設定
-    
-    すべてのデータは、デバイス上にのみ保存され、外部サーバーには送信されません。
-    Lightning送金時は、NWC経由でNostrリレーを使用しますが、個人情報は送信されません。
-  # privacyPolicyUrl: "https://zapclock.app/privacy"
-
-# 利用規約（オプション）
-# termsOfServiceUrl: "https://zapclock.app/terms"
-
-# Nostr関連（ZapStore特有）
-nostr:
-  # アプリのNostrイベント種別（通常は kind: 32267）
-  kind: 32267
+  🚨 Key Features:
+  - Alarm stops ONLY when you send Lightning sats
+  - Or use as a regular alarm (without payment requirement)
+  - Recurring alarms with flexible day-of-week scheduling (once, daily, weekdays, weekend, custom)
+  - Custom alarm sounds and ringtones
+  - Vibration support
+  - Wake up and contribute to the ecosystem every morning
   
-  # NIP-89: Application Handler（オプション）
-  # handlers:
-  #   - kind: 9734  # Zap request
-  #   - kind: 9735  # Zap receipt
+  ⚡ Lightning Integration:
+  - **Nostr Wallet Connect (NWC)** - use your existing wallet (Alby, Mutiny, etc.)
+  - **Lightning Address** support with LNURL-pay protocol
+  - **Penalty Preset System** - Choose from 6 smart presets:
+    - ⚡ 15 seconds / 21 sats
+    - 🔥 30 seconds / 42 sats
+    - 💪 1 minute / 100 sats
+    - 😴 5 minutes / 500 sats
+    - 😱 10 minutes / 1,000 sats
+    - 💀 15 minutes / 2,100 sats
+    - ⚙️ Custom (set your own timeout and amount)
+  - **Configurable donation recipients** via YAML
+  - Default recipients: ZapClock Developer, Zeus Wallet Developer, Sparrow Wallet Developer
+  - Per-alarm recipient override supported
+  - Payment messages automatically included ("donation from ZapClock")
+  - Secure: NWC connection stored locally only
+  - Alarm continues ringing if payment fails (ensures you wake up!)
+  
+  🌍 Internationalization:
+  - Multi-language support (English and Japanese)
+  - Easy to add more languages via ARB files
+  
+  🎨 Design:
+  - Material Design 3 with dynamic colors
+  - Dark theme support (automatic)
+  - Bitcoin/Lightning-themed orange palette
+  - Simple, intuitive interface
+  - Onboarding screen for first-time users
+  - Permission management system
+  
+  🔧 Technical:
+  - Rust backend for cryptographic operations (nostr-sdk, nwc)
+  - Flutter for smooth cross-platform UI
+  - Riverpod 2.6.1 for state management
+  - Android 6.0+ (API 23+) support
+  - flutter_rust_bridge for seamless Rust-Flutter integration
+  - Enhanced logging and error handling
+  - ProGuard optimization for production builds
+  
+  ✨ Fully Functional & Ready to Use:
+  ZapClock is production-ready with all core features implemented and tested!
+  Wake up every morning knowing you're supporting the Bitcoin/Nostr ecosystem.
+  
+  🔮 Future Enhancements:
+  - **Amber (Nostr Signer)** integration for secure Nostr login
+  - **Donate to your Nostr follows** - random selection with Lightning Address
+  - Identity-aware zaps (NIP-57 support)
+  - Payment history and analytics
+  - iOS support
+  
+  Perfect for Bitcoin enthusiasts who want to start their day by supporting the decentralized ecosystem!
+  
+  ⚠️ Requirements:
+  - Nostr Wallet Connect (NWC) compatible wallet (Alby, Mutiny, etc.) for Lightning payment features
+  - Android 6.0 or higher
 
+# Repository and Homepage
+repository: https://github.com/higedamc/zap_clock
+homepage: https://github.com/higedamc/zap_clock
+license: MIT
+
+# Visual Assets
+icon: assets/icon.png
+images:
+  - screenshots/01_alarm_list.png
+  - screenshots/02_alarm_edit.png
+  - screenshots/03_alarm_ring.png
+  - screenshots/04_settings.png
+
+# Changelog
+changelog: CHANGELOG.md
+
+# Tags (space-separated)
+tags: bitcoin lightning nostr alarm productivity nwc utilities lnurl rust flutter i18n donation
+
+# APK Assets (will be parsed automatically)
+assets:
+  - build/app/outputs/flutter-apk/app-release.apk
+
+# Remote Metadata Sources
+# Temporarily commented out due to SSL issues
+# remote_metadata:
+#   - github
+
+# Blossom Servers (for asset hosting)
+# Temporarily commented out due to SSL issues
+# blossom_servers:
+#   - https://cdn.zapstore.dev
+#   - https://blossom.band

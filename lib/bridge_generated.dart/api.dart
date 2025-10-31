@@ -6,11 +6,11 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// NWC接続をテストして残高を取得
+/// Test NWC connection and get balance
 Future<BigInt> testNwcConnection({required String connectionString}) =>
     RustLib.instance.api.crateApiTestNwcConnection(connectionString: connectionString);
 
-/// Lightning送金を実行する
+/// Execute Lightning payment
 Future<String> payLightningInvoice({
   required String connectionString,
   required String lightningAddress,

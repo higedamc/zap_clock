@@ -4,14 +4,19 @@
 
 ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alarm stops only after you send a specified amount via Lightning. With the compelling force of "pay to wake up," you'll never oversleep again!
 
+**✨ Version 1.0.0 - First Public Release! ✨**
+
 <br>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen?logo=github" />
   <img src="https://img.shields.io/badge/Flutter-3.9.2-02569B?logo=flutter" />
   <img src="https://img.shields.io/badge/Rust-1.75-orange?logo=rust" />
   <img src="https://img.shields.io/badge/Lightning-Enabled-yellow?logo=lightning" />
   <img src="https://img.shields.io/badge/Nostr-NWC-purple?logo=nostr" />
+  <img src="https://img.shields.io/badge/i18n-EN%20%7C%20JA-blue" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
+  <img src="https://img.shields.io/badge/Status-Production%20Ready-success" />
 </p>
 
 ---
@@ -22,15 +27,24 @@ ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alar
 - **Nostr Wallet Connect (NWC)** integration
 - **Lightning Address** support
 - **LNURL-pay** support with donation messages
-- **Multiple donation recipients to choose from**
-  - Human Rights Foundation
-  - Zeus Lightning Wallet developer
-  - Sparrow Wallet developer
-  - OpenSats
-  - Bitcoin Design Community
+- **Penalty Preset System** - Choose from 6 preset combinations:
+  - ⚡ 15 seconds / 21 sats
+  - 🔥 30 seconds / 42 sats
+  - 💪 1 minute / 100 sats
+  - 😴 5 minutes / 500 sats
+  - 😱 10 minutes / 1,000 sats
+  - 💀 15 minutes / 2,100 sats
+  - ⚙️ Custom (set your own timeout and amount)
+- **Configurable donation recipients**
+  - Loaded from `assets/donation_recipients.yaml`
+  - Default recipients include:
+    - ZapClock Developer
+    - Zeus Wallet Developer
+    - Sparrow Wallet Developer
+  - Add custom recipients via YAML or app settings
 - Alarm continues ringing if payment fails (ensures you wake up!)
 
-### 🟣 Nostr Integration (Coming Soon)
+### 🟣 Nostr Integration (Planned)
 - **Amber Signer** support for secure login
 - **Donate to your Nostr follows** with Lightning Address
 - **Identity-aware or anonymous** zaps
@@ -39,15 +53,26 @@ ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alar
 ### ⏰ Powerful Alarm Features
 - Precise alarm triggering at set times
 - Recurring alarms (day of week specification)
+  - Once only
+  - Every day
+  - Weekdays
+  - Weekend
+  - Custom (select specific days)
 - Custom alarm sounds
 - Vibration support
 - Screen unlock functionality
+- Full-screen alarm ring screen
 
 ### 🎨 Modern UI
 - Material Design 3 compliant
 - Dark theme support
 - Bitcoin/Lightning-themed color palette
 - Simple and intuitive interface
+- Onboarding screen for first-time users
+
+### 🌍 Internationalization
+- Multi-language support (English and Japanese)
+- Easy to add more languages via ARB files
 
 ---
 
@@ -57,8 +82,10 @@ ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alar
 
 1. Tap the "+" button on the alarm list screen
 2. Set the time and label
-3. Tap "Save"
-4. When the alarm rings, tap "Stop Alarm" to silence it
+3. Set repeat days (optional)
+4. Select alarm sound (optional)
+5. Tap "Save"
+6. When the alarm rings, tap "Stop Alarm" to silence it
 
 ### Lightning Payment Required Alarm
 
@@ -67,27 +94,37 @@ ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alar
 2. Obtain an NWC connection string
 
 #### Setup Steps
-1. Tap the ⚙️ (Settings) button in the top right
-2. Enter the connection string in the "Nostr Wallet Connect" section
-3. Test the connection with "Test Connection" (optional)
-4. Select a recipient in the "Donation Recipient" section
-   - Human Rights Foundation (default)
-   - Zeus Lightning Wallet developer
-   - Sparrow Wallet developer
-   - OpenSats
-   - Bitcoin Design Community
-5. Enter Lightning settings in the alarm edit screen
-   - Amount (sats)
-   - Timeout duration
-6. Tap "Save"
+1. **Configure NWC Connection**
+   - Tap the ⚙️ (Settings) button in the top right
+   - Enter the connection string in the "Nostr Wallet Connect" section
+   - Test the connection with "Test Connection" (optional but recommended)
+   
+2. **Select Default Donation Recipient** (Optional)
+   - In Settings, select a default recipient in the "Donation Recipient" section
+   - Choose from:
+     - ZapClock Developer (default)
+     - Zeus Wallet Developer
+     - Sparrow Wallet Developer
+   - Or add custom recipients by editing `assets/donation_recipients.yaml`
+   
+3. **Create Penalty Alarm**
+   - Tap "+" to create a new alarm
+   - Set time and label as usual
+   - In the "Penalty Settings" section:
+     - Choose a preset (⚡ 15s/21 sats ~ 💀 15m/2,100 sats)
+     - Or select "⚙️ Custom" to set your own timeout and amount
+   - Optionally override the donation recipient for this specific alarm
+   - Tap "Save"
 
 #### Stopping the Alarm
-1. Alarm rings
-2. Payment information is displayed
-3. Tap "Pay to Stop Alarm" button
-4. Processing payment... (loading indicator)
-5. ✅ Payment successful → Alarm stops
-6. ❌ Payment failed → Error message, alarm continues ringing
+1. Alarm rings at the set time
+2. **If penalty is configured:**
+   - Payment information is displayed (amount, timeout, recipient)
+   - Countdown timer shows remaining time
+   - **Option 1:** Tap "Stop now (no payment)" to silence the alarm
+   - **Option 2:** Wait for timeout → Payment automatically sent via NWC
+3. **If no penalty configured:**
+   - Simply tap "Stop Alarm" to silence it
 
 ---
 
@@ -98,20 +135,26 @@ ZapClock is a funny alarm app powered by the Bitcoin Lightning Network. The alar
 - **Riverpod** 2.6.1 - State management
 - **GoRouter** 14.6.4 - Routing
 - **alarm** 5.1.5 - Alarm functionality
+- **intl** 0.20.1 - Internationalization and date/time formatting
+- **yaml** 3.1.2 - YAML parsing for donation recipients
 
 ### Backend (Rust)
 - **nostr-sdk** 0.37 - Nostr client SDK (NWC, future: relay communication)
 - **nwc** 0.37 - Nostr Wallet Connect
-- **reqwest** 0.12 - HTTP client (for LNURL-pay)
-- **flutter_rust_bridge** 2.11.1 - Flutter-Rust bridge
+- **reqwest** 0.12 - HTTP client (rustls-tls, for LNURL-pay)
+- **flutter_rust_bridge** 2.7.0 - Flutter-Rust bridge
+- **tracing** 0.1 - Structured logging framework
+- **tracing-subscriber** 0.3 - Log output configuration
+- **tracing-android** 0.2 - Android Logcat integration
 
 ### Planned Dependencies
 - **Amber SDK** - Nostr external signer integration
 - Additional Nostr tools for identity and zap management
 
 ### Other
-- **shared_preferences** - Local storage
-- **permission_handler** - Permission management
+- **shared_preferences** 2.3.5 - Local storage
+- **permission_handler** 11.3.1 - Permission management
+- **http** 1.2.2 - HTTP client for Flutter
 
 ---
 
@@ -136,6 +179,9 @@ cargo install cargo-ndk
 
 # Install dependencies
 fvm flutter pub get
+
+# Optional: Customize donation recipients
+# Edit assets/donation_recipients.yaml to add your own recipients
 ```
 
 ### Build
@@ -203,16 +249,27 @@ zap_clock/
 ├── lib/
 │   ├── main.dart                    # App entry point
 │   ├── app_theme.dart               # Theme configuration
+│   ├── l10n/                        # Localization files
+│   │   ├── app_en.arb               # English translations
+│   │   ├── app_ja.arb               # Japanese translations
+│   │   └── app_localizations*.dart  # Generated localization classes
+│   ├── bridge_generated.dart/       # Generated Rust bridge code
+│   │   ├── api.dart                 # Bridge API definitions
+│   │   └── frb_generated*.dart      # FRB generated files
 │   ├── models/
 │   │   ├── alarm.dart               # Alarm data model
-│   │   └── donation_recipient.dart  # Donation recipient presets
+│   │   ├── donation_recipient.dart  # Donation recipient model
+│   │   └── penalty_preset.dart      # Penalty preset model
 │   ├── providers/
 │   │   ├── alarm_provider.dart      # Alarm state management
-│   │   └── nwc_provider.dart        # NWC state management
+│   │   ├── nwc_provider.dart        # NWC state management
+│   │   └── storage_provider.dart    # Storage state management
 │   ├── services/
 │   │   ├── alarm_service.dart       # Alarm control
 │   │   ├── storage_service.dart     # Local storage
-│   │   └── nwc_service.dart         # NWC/Lightning payment
+│   │   ├── nwc_service.dart         # NWC/Lightning payment
+│   │   ├── permission_service.dart  # Permission management
+│   │   └── ringtone_service.dart    # Custom ringtone handling
 │   ├── screens/
 │   │   ├── alarm_list_screen.dart   # Alarm list
 │   │   ├── alarm_edit_screen.dart   # Alarm editing
@@ -230,12 +287,16 @@ zap_clock/
 │       └── lightning.rs             # Lightning payment processing
 ├── android/                         # Android-specific config
 ├── assets/
-│   └── alarm_sound.mp3              # Alarm sound
+│   ├── alarm_sound.mp3              # Default alarm sound
+│   ├── icon.png                     # App icon
+│   └── donation_recipients.yaml     # Donation recipient list
 ├── screenshots/                     # Screenshots for ZapStore
 ├── zapstore.yaml                    # ZapStore manifest
 ├── ZAPSTORE_RELEASE.md              # ZapStore release guide
 ├── IMPLEMENTATION_STATUS.md         # Implementation status
-└── PHASE2_IMPLEMENTATION.md         # Phase 2 implementation details
+├── PHASE2_IMPLEMENTATION.md         # Phase 2 implementation details
+├── CHANGELOG.md                     # Version history
+└── l10n.yaml                        # Localization configuration
 ```
 
 ---
@@ -313,32 +374,71 @@ The logging system provides:
 
 ---
 
-## 🐛 Known Issues
+## 🎉 Production Ready
 
-- Currently, the Rust bridge has not been generated, so Lightning payment functionality operates with mock implementation
-- To use in production, Rust code must be built
+ZapClock v1.0.0 is now production-ready with all core features fully implemented and tested!
 
-For details, refer to [`PHASE2_IMPLEMENTATION.md`](PHASE2_IMPLEMENTATION.md).
+**This is the first public release available on ZapStore!**
+
+### What's Working
+- ✅ Alarm functionality with precise timing
+- ✅ Lightning payments via NWC
+- ✅ Penalty Preset System (6 presets + custom)
+- ✅ Multi-language support (English & Japanese)
+- ✅ YAML-based donation recipient configuration
+- ✅ Custom ringtone support
+- ✅ Permission management system
+- ✅ Full-screen alarm ring screen
+- ✅ Screenshots captured for ZapStore
+
+### Future Enhancements
+See the [Roadmap](#-roadmap) section below for planned features including:
+- Amber (Nostr Signer) integration
+- Nostr follow-based donation
+- Payment history and analytics
+- iOS support
+
+For complete implementation details, refer to:
+- [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) - Current status
+- [`PHASE2_IMPLEMENTATION.md`](PHASE2_IMPLEMENTATION.md) - Phase 2 details
+- [`CHANGELOG.md`](CHANGELOG.md) - Version history
 
 ---
 
 ## 🗺️ Roadmap
 
-### Phase 1: Basic Alarm App ✅
+### Phase 1: Basic Alarm App ✅ (Completed)
 - [x] Alarm setup and management
 - [x] Alarm ringing and stopping
 - [x] Local data persistence
 - [x] Material Design UI
+- [x] Recurring alarms with flexible scheduling
+- [x] Custom alarm sounds
+- [x] Full-screen alarm ring screen
+- [x] Onboarding screen
 
-### Phase 2: Lightning Payment Feature ✅
+### Phase 2: Lightning Payment Feature ✅ (Completed)
 - [x] NWC integration
 - [x] Lightning Address support
-- [x] Settings screen
-- [x] Payment UI
+- [x] Settings screen with NWC configuration
+- [x] Payment UI with loading states
 - [x] Donation recipient selection
+- [x] **Penalty Preset System** (6 presets + custom)
+- [x] YAML-based donation recipient configuration
+- [x] Per-alarm donation recipient override
+- [x] **Internationalization** (English and Japanese)
+- [x] Permission management system
+- [x] Custom ringtone support
 
-### Phase 3: Nostr Integration Enhancement (Planned)
-- [ ] Rust bridge generation and device testing
+### Phase 3: Production Release & Testing ✅ (Completed)
+- [x] Screenshots captured for ZapStore
+- [x] Production build optimization
+- [x] Enhanced error handling and logging
+- [x] Permission management system
+- [x] Documentation updates
+- [x] Ready for ZapStore release
+
+### Phase 4: Nostr Integration Enhancement (Planned)
 - [ ] **Amber (Nostr Signer) Integration**
   - Login with any Nostr account using Amber
   - Secure key management through external signer
@@ -352,13 +452,21 @@ For details, refer to [`PHASE2_IMPLEMENTATION.md`](PHASE2_IMPLEMENTATION.md).
   - Display zap messages in payment UI
 - [ ] Payment history display
 - [ ] Multiple NWC connection profile management
+
+### Phase 5: Advanced Features (Future)
 - [ ] Biometric authentication for payments
 - [ ] Payment amount limit settings
+- [ ] Alarm statistics and analytics
+- [ ] Widget support
+- [ ] iOS support
+- [ ] Additional language support
 
-### Phase 4: ZapStore Release (Planned)
-- [ ] Screenshot capture
-- [ ] Metadata preparation
-- [ ] Publish to ZapStore
+### Phase 6: ZapStore Release & Growth 🚀 (Ready to Launch!)
+- [x] Screenshots prepared
+- [x] Metadata updated (zapstore.yaml)
+- [x] Documentation complete
+- [ ] Community feedback and iteration
+- [ ] Marketing and user acquisition
 
 ---
 
@@ -395,9 +503,11 @@ This project is built upon the following open-source projects:
 
 ## 📞 Contact
 
-- **GitHub Issues**: [Report a bug or request a feature](https://github.com/yourusername/zap_clock/issues)
-- **Nostr**: `npub1...` (Your Nostr public key)
-- **Lightning**: `yourname@getalby.com` (Lightning Address)
+- **GitHub Issues**: [Report a bug or request a feature](https://github.com/higedamc/zap_clock/issues)
+- **Email**: kohei.o@proton.me
+- **Nostr**: `npub1ckhkmr84j33580dgwns9l6e4gpc5kfzjaq05ekarpxjgf5dgj76qmmwyea`
+- **Developer Nostr**: `npub16lrdq99ng2q4hg5ufre5f8j0qpealp8544vq4ctn2wqyrf4tk6uqn8mfeq`
+- **Lightning**: `godzhigella@getalby.com` (Support the developer!)
 
 ---
 
