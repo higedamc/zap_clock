@@ -41,8 +41,15 @@ echo ""
 echo -e "${BLUE}ステップ2: Android用Rustライブラリをビルド${NC}"
 cd rust
 
-# Android用ビルド（arm64-v8a）
+# Android用ビルド（複数アーキテクチャ）
+echo -e "${YELLOW}  📱 arm64-v8a をビルド中...${NC}"
 cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build $BUILD_FLAG
+
+echo -e "${YELLOW}  📱 armeabi-v7a をビルド中...${NC}"
+cargo ndk -t armeabi-v7a -o ../android/app/src/main/jniLibs build $BUILD_FLAG
+
+echo -e "${YELLOW}  💻 x86_64 をビルド中（エミュレータ用）...${NC}"
+cargo ndk -t x86_64 -o ../android/app/src/main/jniLibs build $BUILD_FLAG
 
 cd ..
 

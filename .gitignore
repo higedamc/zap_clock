@@ -71,3 +71,5 @@ keystore.b64
 
 # CI 環境で生成される一時ファイル
 android/app/upload-keystore.jks
+rust/Cargo.lock
+.env
