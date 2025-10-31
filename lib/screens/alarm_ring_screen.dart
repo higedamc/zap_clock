@@ -69,23 +69,31 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   /// バックグラウンドカウントダウンと同期
   void _syncWithBackgroundCountdown(WidgetRef ref) async {
     // 送金設定がない場合はカウントダウン不要
-    if (_alarm?.amountSats == null) return;
+    if (_alarm?.amountSats == null) {
+      debugPrint('⏱️ 送金設定なし、カウントダウン同期をスキップ');
+      return;
+    }
+    
+    debugPrint('⏱️ バックグラウンドカウントダウンとの同期を開始...');
     
     // バックグラウンドで既に開始されているカウントダウンから残り時間を取得
     final remainingSeconds = await _countdownService.getRemainingSeconds(widget.alarmId);
     
     if (remainingSeconds == null) {
-      debugPrint('⚠️ バックグラウンドカウントダウンが見つかりません');
-      return;
+      debugPrint('⚠️ バックグラウンドカウントダウンが見つかりません（まだ開始されていない可能性）');
+      // フォールバック: 設定されたタイムアウト時間を使用
+      if (!mounted) return;
+      setState(() {
+        _remainingSeconds = _alarm!.timeoutSeconds ?? 300;
+      });
+      debugPrint('⏱️ フォールバック: タイムアウト設定値を使用 (${_remainingSeconds}秒)');
+    } else {
+      if (!mounted) return;
+      setState(() {
+        _remainingSeconds = remainingSeconds;
+      });
+      debugPrint('✅ バックグラウンドカウントダウンと同期完了: 残り${_remainingSeconds}秒');
     }
-    
-    if (!mounted) return;
-    
-    setState(() {
-      _remainingSeconds = remainingSeconds;
-    });
-    
-    debugPrint('⏱️ バックグラウンドカウントダウンと同期: 残り${_remainingSeconds}秒');
     
     // 1秒ごとに残り時間を更新
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
@@ -104,6 +112,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
             _remainingSeconds = 0;
           });
         }
+        debugPrint('⏰ カウントダウン完了または停止');
         return;
       }
       
@@ -113,6 +122,8 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         });
       }
     });
+    
+    debugPrint('⏱️ 定期更新タイマーを開始しました');
   }
   
 
@@ -130,6 +141,12 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
               final alarms = storage.getAlarms();
               try {
                 _alarm = alarms.firstWhere((a) => a.id == widget.alarmId);
+                
+                // 初期表示用に設定されたタイムアウト時間をセット
+                // （バックグラウンド同期前でも正しい時間を表示）
+                if (_remainingSeconds == 0 && _alarm!.amountSats != null) {
+                  _remainingSeconds = _alarm!.timeoutSeconds ?? 300;
+                }
                 
                 // バックグラウンドカウントダウンと同期（初回のみ）
                 if (_updateTimer == null) {
