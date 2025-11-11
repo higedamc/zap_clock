@@ -17,8 +17,12 @@ class AlarmService {
       return;
     }
     
-    final nextAlarmTime = alarm.getNextAlarmTime();
-    debugPrint('🔔 Scheduling alarm: ID=${alarm.id}, time=$nextAlarmTime');
+    // スヌーズモードの2回目のアラームは指定時間後にスケジュール
+    final nextAlarmTime = (alarm.enableSnooze && alarm.snoozeCount == 1)
+        ? DateTime.now().add(Duration(seconds: alarm.timeoutSeconds ?? 300))
+        : alarm.getNextAlarmTime();
+    
+    debugPrint('🔔 Scheduling alarm: ID=${alarm.id}, time=$nextAlarmTime, snoozeCount=${alarm.snoozeCount}');
     
     // Determine audio path (use default if null)
     final audioPath = alarm.soundPath ?? 'assets/alarm_sound.mp3';
@@ -33,7 +37,9 @@ class AlarmService {
       volumeSettings: VolumeSettings.fade(volume: 1.0, fadeDuration: const Duration(seconds: 2)),
       notificationSettings: NotificationSettings(
         title: alarm.label.isNotEmpty ? alarm.label : 'ZapClock',
-        body: 'Alarm is ringing',
+        body: (alarm.enableSnooze && alarm.snoozeCount == 1) 
+            ? '2nd alarm - Stop quickly!'
+            : 'Alarm is ringing',
         stopButton: 'Stop',
         icon: 'notification_icon',
       ),

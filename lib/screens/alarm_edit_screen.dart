@@ -457,6 +457,10 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
       final finalAmountSats = (_selectedPreset != null || _isCustom) ? _amountSats : null;
       final finalTimeoutSeconds = (_selectedPreset != null || _isCustom) ? _timeoutSeconds : null;
       
+      // スヌーズモードの設定を取得
+      final enableSnooze = _selectedPreset?.enableSnooze ?? false;
+      final snoozeTimeoutRange = _selectedPreset?.snoozeTimeoutRange ?? (3, 30);
+      
       if (widget.alarmId == null) {
         // 新規作成
         final newId = await ref.read(alarmListProvider.notifier).getNextAlarmId();
@@ -472,6 +476,9 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
+          enableSnooze: enableSnooze,
+          snoozeCount: 0, // 初期値
+          snoozeTimeoutRange: snoozeTimeoutRange,
         );
         await ref.read(alarmListProvider.notifier).addAlarm(newAlarm);
       } else {
@@ -487,6 +494,9 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
           donationRecipient: _donationRecipient,
           soundPath: _soundPath,
           soundName: _soundName,
+          enableSnooze: enableSnooze,
+          snoozeCount: 0, // リセット
+          snoozeTimeoutRange: snoozeTimeoutRange,
         );
         await ref.read(alarmListProvider.notifier).updateAlarm(updatedAlarm);
       }
@@ -624,6 +634,8 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
                       _isCustom = false;
                       _amountSats = preset.amountSats;
                       _timeoutSeconds = preset.timeoutSeconds;
+                      // スヌーズモードの設定を反映
+                      // Note: enableSnoozeとsnoozeTimeoutRangeはsaveAlarm時に設定
                     });
                   },
                 );
@@ -728,6 +740,17 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
   /// Get preset label
   String _getPresetLabel(AppLocalizations l10n, PenaltyPreset preset) {
     switch (preset.nameKey) {
+      case 'penaltyPresetSnooze5s1':
+        return '5秒 / 1 sat (テスト)';
+      case 'penaltyPresetSnooze5m21':
+        return '5分 / 21 sats';
+      case 'penaltyPresetSnooze10m100':
+        return '10分 / 100 sats';
+      case 'penaltyPresetSnooze15m500':
+        return '15分 / 500 sats';
+      case 'penaltyPresetSnooze30m1000':
+        return '30分 / 1000 sats';
+      // 旧プリセットとの後方互換性
       case 'penaltyPreset15s':
         return l10n.penaltyPreset15s;
       case 'penaltyPreset30s':
@@ -752,6 +775,12 @@ class _AlarmEditScreenState extends State<AlarmEditScreen> {
     } else if (_isCustom) {
       final timeoutStr = _getTimeoutLabel(l10n, _timeoutSeconds ?? 300);
       return '${l10n.customPenaltySettings}: $timeoutStr / ${_amountSats ?? 0} sats';
+    } else if (_selectedPreset != null && _selectedPreset!.enableSnooze) {
+      // スヌーズモードの説明
+      final timeout = _selectedPreset!.timeoutSeconds;
+      final timeStr = timeout >= 60 ? '${(timeout / 60).round()}分' : '${timeout}秒';
+      final range = _selectedPreset!.snoozeTimeoutRange;
+      return 'スヌーズ → ${timeStr}後に2回目のアラーム → ${range?.$1 ?? 3}~${range?.$2 ?? 30}秒以内に停止すれば${_selectedPreset!.amountSats} satsを失わない';
     } else if (_selectedPreset != null) {
       return l10n.lightningSettingsDescription;
     }

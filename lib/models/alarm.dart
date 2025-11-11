@@ -35,6 +35,16 @@ class Alarm {
   /// Alarm sound display name
   final String? soundName;
   
+  /// Enable snooze mode (2nd alarm with random timeout)
+  final bool enableSnooze;
+  
+  /// Snooze count (0 = first alarm, 1 = second alarm after snooze)
+  final int snoozeCount;
+  
+  /// Random timeout range for snooze (min seconds, max seconds)
+  /// Default: 3-30 seconds
+  final (int, int) snoozeTimeoutRange;
+  
   Alarm({
     required this.id,
     required this.hour,
@@ -47,6 +57,9 @@ class Alarm {
     this.donationRecipient,
     this.soundPath,
     this.soundName,
+    this.enableSnooze = false,
+    this.snoozeCount = 0,
+    this.snoozeTimeoutRange = (3, 30),
   }) : repeatDays = repeatDays ?? List.filled(7, false);
   
   /// Get time as string (e.g., "07:30")
@@ -181,6 +194,10 @@ class Alarm {
       'donationRecipient': donationRecipient,
       'soundPath': soundPath,
       'soundName': soundName,
+      'enableSnooze': enableSnooze,
+      'snoozeCount': snoozeCount,
+      'snoozeTimeoutRangeMin': snoozeTimeoutRange.$1,
+      'snoozeTimeoutRangeMax': snoozeTimeoutRange.$2,
     };
   }
   
@@ -191,6 +208,10 @@ class Alarm {
     if (timeoutSecs == null && json['timeoutMinutes'] != null) {
       timeoutSecs = (json['timeoutMinutes'] as int) * 60;
     }
+    
+    // Parse snooze timeout range
+    final rangeMin = json['snoozeTimeoutRangeMin'] as int? ?? 3;
+    final rangeMax = json['snoozeTimeoutRangeMax'] as int? ?? 30;
     
     return Alarm(
       id: json['id'] as int,
@@ -204,6 +225,9 @@ class Alarm {
       donationRecipient: json['donationRecipient'] as String?,
       soundPath: json['soundPath'] as String?,
       soundName: json['soundName'] as String?,
+      enableSnooze: json['enableSnooze'] as bool? ?? false,
+      snoozeCount: json['snoozeCount'] as int? ?? 0,
+      snoozeTimeoutRange: (rangeMin, rangeMax),
     );
   }
   
@@ -220,6 +244,9 @@ class Alarm {
     String? donationRecipient,
     String? soundPath,
     String? soundName,
+    bool? enableSnooze,
+    int? snoozeCount,
+    (int, int)? snoozeTimeoutRange,
   }) {
     return Alarm(
       id: id ?? this.id,
@@ -233,6 +260,9 @@ class Alarm {
       donationRecipient: donationRecipient ?? this.donationRecipient,
       soundPath: soundPath ?? this.soundPath,
       soundName: soundName ?? this.soundName,
+      enableSnooze: enableSnooze ?? this.enableSnooze,
+      snoozeCount: snoozeCount ?? this.snoozeCount,
+      snoozeTimeoutRange: snoozeTimeoutRange ?? this.snoozeTimeoutRange,
     );
   }
   
