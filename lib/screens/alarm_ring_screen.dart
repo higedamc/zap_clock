@@ -40,6 +40,9 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   void initState() {
     super.initState();
     
+    // 画面ロックをバイパス（アラーム鳴動時のみ）
+    _enableLockScreenBypass();
+    
     // 全画面表示にする
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     
@@ -61,6 +64,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   void dispose() {
     _animationController.dispose();
     _updateTimer?.cancel();
+    
+    // 画面ロックバイパスを無効化
+    _disableLockScreenBypass();
+    
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,
@@ -669,9 +676,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     final timeStr = timeout >= 60 ? '${(timeout / 60).round()}分' : '${timeout}秒';
     debugPrint('✅ スヌーズ完了、${timeStr}後に2回目のアラームをスケジュールしました');
     
-    // 画面を閉じる
+    // 画面を閉じる（アプリをバックグラウンドに移動）
     if (context.mounted) {
-      context.go('/');
+      debugPrint('🚪 スヌーズ後、アプリをバックグラウンドに移動します');
+      SystemNavigator.pop();
     }
   }
   
@@ -756,8 +764,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
       return;
     }
     
-    debugPrint('🚪 画面を閉じます');
-    context.go('/');
+    debugPrint('🚪 アプリをバックグラウンドに移動します');
+    // アラーム一覧画面に遷移せず、アプリをバックグラウンドに移動
+    // これにより、画面ロック中であればロック画面に戻る
+    SystemNavigator.pop();
     debugPrint('✅ _stopAlarmAndCloseScreen完了');
   }
   
@@ -768,6 +778,28 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     } else {
       final minutes = seconds ~/ 60;
       return l10n.timeoutMessageMinutes(minutes);
+    }
+  }
+  
+  /// 画面ロックバイパスを有効化（アラーム鳴動時のみ）
+  Future<void> _enableLockScreenBypass() async {
+    try {
+      const platform = MethodChannel('com.zapclock.zap_clock/lockscreen');
+      await platform.invokeMethod('enableLockScreenBypass');
+      debugPrint('🔓 画面ロックバイパスを有効化しました');
+    } catch (e) {
+      debugPrint('⚠️ 画面ロックバイパス有効化に失敗: $e');
+    }
+  }
+  
+  /// 画面ロックバイパスを無効化
+  Future<void> _disableLockScreenBypass() async {
+    try {
+      const platform = MethodChannel('com.zapclock.zap_clock/lockscreen');
+      await platform.invokeMethod('disableLockScreenBypass');
+      debugPrint('🔒 画面ロックバイパスを無効化しました');
+    } catch (e) {
+      debugPrint('⚠️ 画面ロックバイパス無効化に失敗: $e');
     }
   }
 }
