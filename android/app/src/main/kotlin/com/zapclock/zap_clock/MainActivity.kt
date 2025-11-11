@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -18,6 +19,7 @@ import java.io.FileOutputStream
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.zapclock.zap_clock/ringtone"
     private val PERMISSION_CHANNEL = "com.zapclock.zap_clock/permission"
+    private val LOCK_SCREEN_CHANNEL = "com.zapclock.zap_clock/lockscreen"
     private val RINGTONE_PICKER_REQUEST = 100
     private var pendingResult: MethodChannel.Result? = null
     
@@ -90,6 +92,23 @@ class MainActivity : FlutterActivity() {
                 }
                 "openFullScreenIntentSettings" -> {
                     openFullScreenIntentSettings()
+                    result.success(true)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+        
+        // Lock screen bypass channel (for alarm ringing screen only)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LOCK_SCREEN_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "enableLockScreenBypass" -> {
+                    enableLockScreenBypass()
+                    result.success(true)
+                }
+                "disableLockScreenBypass" -> {
+                    disableLockScreenBypass()
                     result.success(true)
                 }
                 else -> {
@@ -211,5 +230,53 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
+    }
+    
+    /**
+     * Enable lock screen bypass (show over lock screen and turn screen on)
+     * This should only be called when the alarm is ringing
+     */
+    private fun enableLockScreenBypass() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            // API 27+: Use new methods
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            // API 26 and below: Use window flags
+            @Suppress("DEPRECATION")
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
+        }
+        
+        // Keep screen on while alarm is ringing
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
+        android.util.Log.d("ZapClock", "Lock screen bypass enabled")
+    }
+    
+    /**
+     * Disable lock screen bypass
+     * This should be called when the alarm is stopped
+     */
+    private fun disableLockScreenBypass() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            // API 27+: Use new methods
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        } else {
+            // API 26 and below: Clear window flags
+            @Suppress("DEPRECATION")
+            window.clearFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
+        }
+        
+        // Allow screen to turn off naturally
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
+        android.util.Log.d("ZapClock", "Lock screen bypass disabled")
     }
 }
