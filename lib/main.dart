@@ -131,17 +131,23 @@ class _MyAppState extends ConsumerState<MyApp> {
     }
     
     // バックグラウンドでカウントダウンを開始
-    final countdownService = AlarmCountdownService();
-    final nwcService = ref.read(nwcServiceProvider);
-    
-    await countdownService.startCountdown(
-      alarmId: alarmId,
-      alarm: alarm,
-      storageService: storage,
-      nwcService: nwcService,
-    );
-    
-    debugPrint('✅ バックグラウンドカウントダウン開始完了');
+    // スヌーズモードの2回目のアラームでは、ランダムタイムアウトを使用
+    // （UI側でランダム生成されるため、バックグラウンドでは開始しない）
+    if (alarm.enableSnooze && alarm.snoozeCount == 1) {
+      debugPrint('🎲 スヌーズ2回目: バックグラウンドカウントダウンはスキップ（UI側で処理）');
+    } else {
+      final countdownService = AlarmCountdownService();
+      final nwcService = ref.read(nwcServiceProvider);
+      
+      await countdownService.startCountdown(
+        alarmId: alarmId,
+        alarm: alarm,
+        storageService: storage,
+        nwcService: nwcService,
+      );
+      
+      debugPrint('✅ バックグラウンドカウントダウン開始完了');
+    }
     
     // アラーム画面に遷移
     _navigateToRingScreen(alarmId);
