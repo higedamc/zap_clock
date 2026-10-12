@@ -1,6 +1,7 @@
 package com.zapclock.zap_clock
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -18,12 +19,22 @@ import java.io.FileOutputStream
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.zapclock.zap_clock/ringtone"
     private val PERMISSION_CHANNEL = "com.zapclock.zap_clock/permission"
+    private val LOCK_SCREEN_CHANNEL = "com.zapclock.zap_clock/lockscreen"
     private val RINGTONE_PICKER_REQUEST = 100
     private var pendingResult: MethodChannel.Result? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleAlarmClockIntent(intent)
+        // Lock-screen bypass (showWhenLocked / turnScreenOn) is NOT set here on
+        // purpose. The alarm plugin owns it: AlarmPlugin observes
+        // AlarmRingingLiveData and sets the flags for the ringing window only.
+        // LiveData re-delivers its last value to a new observer once the activity
+        // is STARTED, so a cold start launched by the full-screen intent should
+        // receive `true` before the first frame. Untested hypothesis: if a device
+        // shows the first frame behind the keyguard on cold start, pre-setting
+        // the flags here from AlarmRingingLiveData.instance.value would be the
+        // fix. Add it only once that is observed on a device, not before.
     }
     
     override fun onNewIntent(intent: Intent) {
@@ -97,6 +108,41 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
+
+        // Lock screen exit channel.
+        // The lock-screen bypass itself (showWhenLocked / turnScreenOn) is owned by
+        // the alarm plugin: AlarmPlugin observes AlarmRingingLiveData and sets the
+        // flags for the ringing window only. This channel only decides where the
+        // user lands after the alarm has been stopped.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LOCK_SCREEN_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "leaveRingScreen" -> {
+                    result.success(leaveRingScreen())
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    /**
+     * Called by the ring screen after the alarm has been stopped.
+     * If the keyguard is still locked, move the task to the back so the user
+     * lands on the lock screen instead of the alarm list (issue #12).
+     * Returns true when the task was moved to the back.
+     *
+     * moveTaskToBack keeps the activity and the Flutter engine alive, unlike
+     * finish() / SystemNavigator.pop(), so the next ring does not pay a cold start.
+     */
+    private fun leaveRingScreen(): Boolean {
+        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val locked = keyguardManager.isKeyguardLocked
+        android.util.Log.d("ZapClock", "leaveRingScreen: keyguardLocked=$locked")
+        if (!locked) return false
+        val moved = moveTaskToBack(true)
+        android.util.Log.d("ZapClock", "leaveRingScreen: movedTaskToBack=$moved")
+        return moved
     }
 
     private fun pickRingtone(result: MethodChannel.Result) {

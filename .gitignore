@@ -73,3 +73,6 @@ keystore.b64
 android/app/upload-keystore.jks
 rust/Cargo.lock
 .env
+
+# Kotlin compiler daemon session files
+android/.kotlin/
