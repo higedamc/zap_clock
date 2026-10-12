@@ -1,26 +1,26 @@
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import '../models/alarm.dart' as app_models;
+import 'alarm_ring_controller.dart';
+import 'ring_schedule.dart';
 
 /// Alarm management service
 /// Schedule alarms using the alarm package
-class AlarmService {
+class AlarmService implements AlarmScheduler {
   /// Initialize alarm manager
   static Future<void> initialize() async {
     await Alarm.init();
   }
   
   /// Schedule an alarm
+  @override
   Future<void> scheduleAlarm(app_models.Alarm alarm) async {
     if (!alarm.isEnabled) {
       await cancelAlarm(alarm.id);
       return;
     }
     
-    // スヌーズモードの2回目のアラームは指定時間後にスケジュール
-    final nextAlarmTime = (alarm.enableSnooze && alarm.snoozeCount == 1)
-        ? DateTime.now().add(Duration(seconds: alarm.timeoutSeconds ?? 300))
-        : alarm.getNextAlarmTime();
+    final nextAlarmTime = nextRingTime(alarm, DateTime.now());
     
     debugPrint('🔔 Scheduling alarm: ID=${alarm.id}, time=$nextAlarmTime, snoozeCount=${alarm.snoozeCount}');
     
@@ -74,21 +74,8 @@ class AlarmService {
     }
   }
   
-  /// Get currently ringing alarm IDs
-  Future<List<int>> getRingingAlarmIds() async {
-    final alarms = await Alarm.getAlarms();
-    return alarms.map((alarm) => alarm.id).toList();
-  }
-  
-  /// Check if specified ID alarm is ringing
-  Future<bool> isRinging(int alarmId) async {
-    final alarms = await Alarm.getAlarms();
-    return alarms.any((alarm) => alarm.id == alarmId);
-  }
-  
-  /// Stop an alarm
-  Future<void> stopAlarm(int alarmId) async {
-    debugPrint('⏹️ Stopping alarm: ID=$alarmId');
-    await Alarm.stop(alarmId);
-  }
+  // getRingingAlarmIds() / isRinging() / stopAlarm() were removed on purpose.
+  // The first two returned the *scheduled* list (Alarm.getAlarms()), so
+  // isRinging was true whenever any alarm was enabled. Ringing state is owned
+  // by AlarmRingController, and stopping goes through it as well.
 }

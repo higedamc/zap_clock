@@ -3,10 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:alarm/alarm.dart';
 import 'app_theme.dart';
+import 'providers/alarm_ring_controller_provider.dart';
 import 'providers/storage_provider.dart';
-import 'providers/nwc_provider.dart';
 import 'screens/alarm_list_screen.dart';
 import 'screens/alarm_edit_screen.dart';
 import 'screens/alarm_ring_screen.dart';
@@ -14,7 +13,6 @@ import 'screens/settings_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/alarm_service.dart';
 import 'services/nwc_service.dart';
-import 'services/alarm_countdown_service.dart';
 import 'models/donation_recipient.dart';
 import 'l10n/app_localizations.dart';
 
@@ -106,51 +104,11 @@ class _MyAppState extends ConsumerState<MyApp> {
       ],
     );
     
-    // Listen for alarm ring events
-    Alarm.ringing.listen((alarmSet) {
-      if (alarmSet.alarms.isNotEmpty) {
-        final alarmSettings = alarmSet.alarms.first;
-        debugPrint('🚨 Alarm started ringing: ID=${alarmSettings.id}');
-        _handleAlarmRinging(alarmSettings.id);
-      }
-    });
-  }
-
-  /// Handle alarm ringing: start background countdown and navigate to ring screen
-  void _handleAlarmRinging(int alarmId) async {
-    debugPrint('🚨 アラームID=$alarmId が鳴り始めました');
-    
-    // アラーム情報を取得
-    final storage = ref.read(storageServiceProvider);
-    final alarms = storage.getAlarms();
-    final alarm = alarms.where((a) => a.id == alarmId).firstOrNull;
-    
-    if (alarm == null) {
-      debugPrint('⚠️ アラームID=$alarmId が見つかりません');
-      return;
-    }
-    
-    // バックグラウンドでカウントダウンを開始
-    // スヌーズモードの2回目のアラームでは、ランダムタイムアウトを使用
-    // （UI側でランダム生成されるため、バックグラウンドでは開始しない）
-    if (alarm.enableSnooze && alarm.snoozeCount == 1) {
-      debugPrint('🎲 スヌーズ2回目: バックグラウンドカウントダウンはスキップ（UI側で処理）');
-    } else {
-      final countdownService = AlarmCountdownService();
-      final nwcService = ref.read(nwcServiceProvider);
-      
-      await countdownService.startCountdown(
-        alarmId: alarmId,
-        alarm: alarm,
-        storageService: storage,
-        nwcService: nwcService,
-      );
-      
-      debugPrint('✅ バックグラウンドカウントダウン開始完了');
-    }
-    
-    // アラーム画面に遷移
-    _navigateToRingScreen(alarmId);
+    // The ring controller mirrors the plugin's ringing set, starts the
+    // countdown and owns every stop path. The app only navigates on its events.
+    final ringController = ref.read(alarmRingControllerProvider);
+    ringController.ringStarted.listen(_navigateToRingScreen);
+    ringController.bind();
   }
   
   /// Navigate to alarm ring screen

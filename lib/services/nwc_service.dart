@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../bridge_generated.dart/frb_generated.dart';
 import '../bridge_generated.dart/api.dart' as rust_api;
+import 'zap_executor.dart';
 
 /// NWC (Nostr Wallet Connect) service
 /// 
 /// Bridge to Rust-side NWC client
-class NwcService {
+class NwcService implements LightningPayer {
   // Initialize Rust bridge (execute only once)
   static Future<void> initialize() async {
     try {
@@ -60,6 +61,21 @@ class NwcService {
     }
   }
   
+  @override
+  Future<String> pay({
+    required String connectionString,
+    required String lightningAddress,
+    required int amountSats,
+    String? comment,
+  }) {
+    return payWithNwc(
+      connectionString: connectionString,
+      lightningAddress: lightningAddress,
+      amountSats: amountSats,
+      comment: comment,
+    );
+  }
+
   /// Pay Lightning Invoice (old method - kept for compatibility)
   Future<String> payInvoice({
     required String connectionString,
