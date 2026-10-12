@@ -136,6 +136,9 @@ class MainActivity : FlutterActivity() {
                 "stopRingingBackstop" -> {
                     result.success(stopRingingBackstop())
                 }
+                "readRingJournal" -> {
+                    result.success(ZapClockApplication.readJournal(this))
+                }
                 else -> {
                     result.notImplemented()
                 }

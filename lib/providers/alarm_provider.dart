@@ -3,10 +3,14 @@ import '../models/alarm.dart';
 import '../services/storage_service.dart';
 import '../services/alarm_service.dart';
 import 'storage_provider.dart';
+import 'zap_providers.dart';
 
 /// AlarmService Provider
 final alarmServiceProvider = Provider<AlarmService>((ref) {
-  return AlarmService();
+  return AlarmService(
+    ledger: ref.watch(zapLedgerProvider),
+    resolveRecipient: ref.watch(zapExecutorProvider).resolveRecipient,
+  );
 });
 
 /// Alarm list StateNotifierProvider

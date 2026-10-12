@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../bridge_generated.dart/frb_generated.dart';
 import '../bridge_generated.dart/api.dart' as rust_api;
+import 'payment_mode.dart';
 import 'zap_executor.dart';
 
 /// NWC (Nostr Wallet Connect) service
@@ -13,7 +14,7 @@ class NwcService implements LightningPayer {
       await RustLib.init();
       debugPrint('✅ Rust bridge initialized');
     } catch (e) {
-      debugPrint('⚠️ Rust bridge initialization failed (using mock): $e');
+      debugPrint('⚠️ Rust bridge initialization failed: $e');
     }
   }
   
@@ -67,37 +68,19 @@ class NwcService implements LightningPayer {
     required String lightningAddress,
     required int amountSats,
     String? comment,
-  }) {
+  }) async {
+    if (kDryRunPayments) {
+      // Compile-time switch (--dart-define=ZAPCLOCK_DRY_RUN_PAYMENTS=true).
+      // Everything upstream behaves exactly as in production; only the wallet
+      // call is replaced.
+      debugPrint('🧪 DRY RUN: would pay $amountSats sats → $lightningAddress');
+      return 'dryrun-${DateTime.now().millisecondsSinceEpoch}';
+    }
     return payWithNwc(
       connectionString: connectionString,
       lightningAddress: lightningAddress,
       amountSats: amountSats,
       comment: comment,
     );
-  }
-
-  /// Pay Lightning Invoice (old method - kept for compatibility)
-  Future<String> payInvoice({
-    required String connectionString,
-    required String lightningAddress,
-    required int amountSats,
-    String? comment,
-  }) async {
-    try {
-      // Use Rust bridge
-      final paymentHash = await rust_api.payLightningInvoice(
-        connectionString: connectionString,
-        lightningAddress: lightningAddress,
-        amountSats: BigInt.from(amountSats),
-        comment: comment,
-      );
-      return paymentHash;
-    } catch (e) {
-      // Fallback to mock on error
-      debugPrint('⚠️ Rust API failed, using mock: $e');
-      debugPrint('⚡ Lightning payment (mock): $amountSats sats → $lightningAddress');
-      await Future.delayed(const Duration(seconds: 2));
-      return 'payment_hash_mock_${DateTime.now().millisecondsSinceEpoch}';
-    }
   }
 }

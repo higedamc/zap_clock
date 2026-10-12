@@ -3,10 +3,23 @@ import 'package:flutter/material.dart';
 import '../models/alarm.dart' as app_models;
 import 'alarm_ring_controller.dart';
 import 'ring_schedule.dart';
+import 'zap_ledger.dart';
 
 /// Alarm management service
 /// Schedule alarms using the alarm package
 class AlarmService implements AlarmScheduler {
+  AlarmService({
+    ZapLedger? ledger,
+    String Function(app_models.Alarm alarm)? resolveRecipient,
+    int Function(int minSeconds, int maxSeconds)? pickSnoozeTimeout,
+  })  : _ledger = ledger,
+        _resolveRecipient = resolveRecipient,
+        _pickSnoozeTimeout = pickSnoozeTimeout ?? defaultSnoozeTimeoutPicker;
+
+  final ZapLedger? _ledger;
+  final String Function(app_models.Alarm alarm)? _resolveRecipient;
+  final int Function(int minSeconds, int maxSeconds) _pickSnoozeTimeout;
+
   /// Initialize alarm manager
   static Future<void> initialize() async {
     await Alarm.init();
@@ -21,6 +34,19 @@ class AlarmService implements AlarmScheduler {
     }
     
     final nextAlarmTime = nextRingTime(alarm, DateTime.now());
+    
+    // The zap this ring may owe is reserved now, keyed by alarm id and ring
+    // time, with its deadline fixed. The ring screen only displays it.
+    final ledger = _ledger;
+    final resolveRecipient = _resolveRecipient;
+    if (ledger != null && resolveRecipient != null) {
+      await ledger.reserve(
+        alarm: alarm,
+        ringAt: nextAlarmTime,
+        resolveRecipient: resolveRecipient,
+        pickSnoozeTimeout: _pickSnoozeTimeout,
+      );
+    }
     
     debugPrint('🔔 Scheduling alarm: ID=${alarm.id}, time=$nextAlarmTime, snoozeCount=${alarm.snoozeCount}');
     
@@ -64,6 +90,7 @@ class AlarmService implements AlarmScheduler {
   /// Cancel an alarm
   Future<void> cancelAlarm(int alarmId) async {
     debugPrint('🔕 Canceling alarm: ID=$alarmId');
+    await _ledger?.cancelPendingFor(alarmId);
     await Alarm.stop(alarmId);
   }
   

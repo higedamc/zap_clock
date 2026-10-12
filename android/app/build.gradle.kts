@@ -109,3 +109,10 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // ZapClockApplication observes the alarm plugin's AlarmRingingLiveData
+    // directly, so LiveData must be on this module's compile classpath. The
+    // Flutter embedding only brings lifecycle-common/runtime (2.7.0).
+    implementation("androidx.lifecycle:lifecycle-livedata-core:2.7.0")
+}
