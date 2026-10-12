@@ -114,6 +114,41 @@ void main() {
     );
   });
 
+  test('a start after the deadline belongs to another ring', () {
+    // The reserved ring never happened (device off, exact alarm dropped).
+    // Three hours later an unrelated alarm rang and was stopped normally.
+    // Its stop is far past the stale deadline, but it must not pay this one.
+    final unrelated = ringAt.add(const Duration(hours: 3));
+    expect(
+      decide(
+        now: ringAt.add(const Duration(hours: 4)),
+        journal: [
+          start(unrelated),
+          stop(unrelated.add(const Duration(minutes: 1))),
+        ],
+      ),
+      SettlementDecision.unprovable,
+    );
+  });
+
+  test('a start exactly at the deadline belongs to another ring', () {
+    expect(
+      decide(journal: [start(deadline), stop(later)]),
+      SettlementDecision.unprovable,
+    );
+  });
+
+  test('a late start inside the window is still this ring', () {
+    // Started a few seconds before the deadline, stopped after it: paid.
+    expect(
+      decide(journal: [
+        start(deadline.subtract(const Duration(seconds: 5))),
+        stop(later),
+      ]),
+      SettlementDecision.pay,
+    );
+  });
+
   test('journal order does not matter', () {
     expect(
       decide(journal: [stop(later), start(ringAt)]),

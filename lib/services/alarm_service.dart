@@ -76,6 +76,10 @@ class AlarmService implements AlarmScheduler {
       // showWhenLocked/turnScreenOn for the ringing window. The manifest no longer
       // carries those flags, so turning this off silently stops alarms from
       // showing over the lock screen (issues #8, #12).
+      // It is also on the money path: the native ring journal
+      // (ZapClockApplication.kt) is fed by the same LiveData, so with this
+      // off the journal stays empty and every overdue zap settles as
+      // `unprovable` (never paid). See zap_settlement.dart.
       androidFullScreenIntent: true,
     );
     

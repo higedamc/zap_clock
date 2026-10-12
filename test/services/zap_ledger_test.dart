@@ -158,6 +158,28 @@ void main() {
       expect(reloaded.recipient, 'me@example.com');
     });
 
+    test('an attempted row is kept past retention, a failed one is pruned',
+        () async {
+      final old = DateTime.now().subtract(ZapLedger.retention * 2);
+      final attempted = await reserve(
+        Alarm(id: 5, hour: 7, minute: 0, amountSats: 1),
+        at: old,
+      );
+      final failed = await reserve(
+        Alarm(id: 6, hour: 7, minute: 0, amountSats: 1),
+        at: old,
+      );
+      await ledger.markAttempted(attempted!.key, at: old);
+      await ledger.markAttempted(failed!.key, at: old);
+      await ledger.markFailed(failed.key, 'boom', at: old);
+
+      // Any write prunes.
+      await reserve(Alarm(id: 7, hour: 7, minute: 0, amountSats: 1));
+
+      expect(ledger.get(attempted.key)?.status, ZapObligationStatus.attempted);
+      expect(ledger.get(failed.key), isNull);
+    });
+
     test('an unreadable ledger is treated as empty, not thrown', () async {
       SharedPreferences.setMockInitialValues({ZapLedger.storageKey: '{bad'});
       final broken = ZapLedger(await SharedPreferences.getInstance());

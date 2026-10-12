@@ -193,52 +193,75 @@ class AlarmRingController {
   /// Settles obligations whose deadline passed while the engine was not there
   /// to see it (process killed, alarm handled from the notification). Safe to
   /// call often; it is a no-op when nothing is overdue.
+  ///
+  /// Never throws: both call sites (platform ringing events and app resume)
+  /// are fire-and-forget, and an unhandled async error there would silently
+  /// end catch-up for the rest of the process. One obligation failing does
+  /// not stop the others from being looked at.
   Future<void> settleOverdue() async {
     if (_settling) return;
     _settling = true;
     try {
-      final now = _clock();
-      final overdue =
-          _ledger.pending().where((o) => !now.isBefore(o.deadline)).toList();
-      if (overdue.isEmpty) return;
-
-      final journal = await _journal.read();
-      for (final stale in overdue) {
-        // Re-read: a timeout or stop may have handled it while we awaited.
-        final obligation = _ledger.get(stale.key);
-        if (obligation == null || !obligation.isPending) continue;
-
-        final ringingNow = _ringing.contains(obligation.alarmId);
-        final decision = decideSettlement(
-          obligation,
-          now: now,
-          ringingNow: ringingNow,
-          journal: journal,
-        );
-        debugPrint('📒 settle ${obligation.key}: $decision '
-            '(ringingNow=$ringingNow, journal=${journal.length} entries)');
-
-        switch (decision) {
-          case SettlementDecision.wait:
-            break;
-          case SettlementDecision.pay:
-            if (ringingNow) {
-              // Still ringing past its deadline: the normal timeout path pays
-              // and stops it.
-              await timeoutReached(obligation.alarmId);
-            } else {
-              await _settle(obligation);
-            }
-          case SettlementDecision.cancel:
-            await _ledger.markCancelled(obligation.key, at: now);
-          case SettlementDecision.unprovable:
-            await _ledger.markUnprovable(obligation.key, at: now);
-            debugPrint('⚠️ ${obligation.key}: deadline passed with no proof '
-                'the alarm rang through it; not paying');
-        }
-      }
+      await _settleOverdueUnguarded();
+    } catch (e, st) {
+      debugPrint('⚠️ settleOverdue failed: $e\n$st');
     } finally {
       _settling = false;
+    }
+  }
+
+  Future<void> _settleOverdueUnguarded() async {
+    final now = _clock();
+    final overdue =
+        _ledger.pending().where((o) => !now.isBefore(o.deadline)).toList();
+    if (overdue.isEmpty) return;
+
+    final journal = await _journal.read();
+    for (final stale in overdue) {
+      try {
+        await _settleOne(stale, now: now, journal: journal);
+      } catch (e, st) {
+        debugPrint('⚠️ settle ${stale.key} failed: $e\n$st');
+      }
+    }
+  }
+
+  Future<void> _settleOne(
+    ZapObligation stale, {
+    required DateTime now,
+    required List<RingJournalEntry> journal,
+  }) async {
+    // Re-read: a timeout or stop may have handled it while we awaited.
+    final obligation = _ledger.get(stale.key);
+    if (obligation == null || !obligation.isPending) return;
+
+    final ringingNow = _ringing.contains(obligation.alarmId);
+    final decision = decideSettlement(
+      obligation,
+      now: now,
+      ringingNow: ringingNow,
+      journal: journal,
+    );
+    debugPrint('📒 settle ${obligation.key}: $decision '
+        '(ringingNow=$ringingNow, journal=${journal.length} entries)');
+
+    switch (decision) {
+      case SettlementDecision.wait:
+        break;
+      case SettlementDecision.pay:
+        if (ringingNow) {
+          // Still ringing past its deadline: the normal timeout path pays
+          // and stops it.
+          await timeoutReached(obligation.alarmId);
+        } else {
+          await _settle(obligation);
+        }
+      case SettlementDecision.cancel:
+        await _ledger.markCancelled(obligation.key, at: now);
+      case SettlementDecision.unprovable:
+        await _ledger.markUnprovable(obligation.key, at: now);
+        debugPrint('⚠️ ${obligation.key}: deadline passed with no proof '
+            'the alarm rang through it; not paying');
     }
   }
 

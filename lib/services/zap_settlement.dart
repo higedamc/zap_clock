@@ -26,11 +26,16 @@ enum SettlementDecision {
 /// 2. If the platform reports the alarm as ringing right now, it rang through
 ///    the deadline: pay.
 /// 3. Otherwise look at the native journal for the ring window that belongs
-///    to this obligation: the first start at or after `ringAt - startSlack`,
-///    and the first stop after that start.
+///    to this obligation: the first start at or after `ringAt - startSlack`
+///    **and before the deadline**, and the first stop after that start.
 ///    - stop at or after the deadline: pay.
 ///    - stop before the deadline: cancel.
 ///    - start without a stop, or no start at all: unprovable.
+///
+/// The upper bound matters for money: a ring that started after the deadline
+/// cannot have rung through it. Without the bound, an obligation whose ring
+/// never happened (device off, exact alarm dropped) would be settled by the
+/// next unrelated ring, whose stop is far past the stale deadline, and pay.
 ///
 /// The journal carries no alarm id (AlarmRingingLiveData is a bare Boolean
 /// and only one alarm rings at a time), so the window is matched by time.
@@ -50,7 +55,9 @@ SettlementDecision decideSettlement(
 
   RingJournalEntry? start;
   for (final entry in sorted) {
-    if (entry.isStart && !entry.at.isBefore(earliestStart)) {
+    if (entry.isStart &&
+        !entry.at.isBefore(earliestStart) &&
+        entry.at.isBefore(obligation.deadline)) {
       start = entry;
       break;
     }

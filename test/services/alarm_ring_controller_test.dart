@@ -688,6 +688,47 @@ void main() {
       expect(ledger.all().single.status, ZapObligationStatus.unprovable);
     });
 
+    test('a throw inside settlement is logged, not propagated, and the next '
+        'call still settles', () async {
+      // bind() in build() already ran one settleOverdue(); make the journal
+      // throw only for the explicit calls below.
+      await build(alarms: [paidAlarm()]);
+      await ledger.reserve(
+        alarm: paidAlarm(),
+        ringAt: ringAt,
+        resolveRecipient: (_) => 'r@example.com',
+        pickSnoozeTimeout: (a, b) => a,
+      );
+      journal.start(ringAt);
+      journal.stop(deadline.add(const Duration(seconds: 40)));
+      now = deadline.add(const Duration(hours: 1));
+
+      journal.readError = StateError('platform channel gone');
+      await expectLater(controller.settleOverdue(), completes);
+      expect(payer.payments, isEmpty);
+      expect(ledger.pending(), hasLength(1), reason: 'undecided, stays pending');
+
+      journal.readError = null;
+      await controller.settleOverdue();
+
+      expect(payer.payments, hasLength(1));
+      expect(ledger.pending(), isEmpty);
+    });
+
+    test('a start after the deadline from an unrelated ring pays nothing',
+        () async {
+      // The reserved 06:00 ring never happened; a different alarm rang at
+      // 09:00 and was stopped normally. Its stop is past the stale deadline
+      // but must not settle this obligation (review blocker on #17).
+      await buildOverdue((j) {
+        j.start(ringAt.add(const Duration(hours: 3)));
+        j.stop(ringAt.add(const Duration(hours: 3, minutes: 1)));
+      });
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.all().single.status, ZapObligationStatus.unprovable);
+    });
+
     test('a journal that fails to read pays nothing', () async {
       await buildOverdue((j) {
         j.start(ringAt);

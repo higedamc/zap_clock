@@ -17,6 +17,9 @@ class ZapLedger {
   static const String storageKey = 'zap_obligations';
 
   /// Settled obligations older than this are pruned on the next write.
+  /// `pending` and `attempted` rows are never pruned: an `attempted` row is
+  /// the at-most-once evidence that a payment was sent and the app crashed
+  /// before recording the result.
   static const Duration retention = Duration(days: 7);
 
   final SharedPreferences _prefs;
@@ -174,7 +177,10 @@ class ZapLedger {
   Future<void> _write(List<ZapObligation> list) async {
     final cutoff = DateTime.now().subtract(retention);
     final kept = list
-        .where((o) => o.isPending || (o.settledAt ?? o.deadline).isAfter(cutoff))
+        .where((o) =>
+            o.isPending ||
+            o.status == ZapObligationStatus.attempted ||
+            (o.settledAt ?? o.deadline).isAfter(cutoff))
         .toList();
     // shared_preferences updates its in-memory cache synchronously, so a
     // reader in the same isolate sees the new state before the disk write.

@@ -129,11 +129,18 @@ class FakeCountdown implements RingCountdown {
 class FakeJournal implements RingJournal {
   final List<RingJournalEntry> entries = [];
 
+  /// When set, [read] throws it instead of returning entries.
+  Object? readError;
+
   void start(DateTime at) => entries.add(RingJournalEntry(isStart: true, at: at));
   void stop(DateTime at) => entries.add(RingJournalEntry(isStart: false, at: at));
 
   @override
-  Future<List<RingJournalEntry>> read() async => List.of(entries);
+  Future<List<RingJournalEntry>> read() async {
+    final error = readError;
+    if (error != null) throw error;
+    return List.of(entries);
+  }
 }
 
 /// A payer that records what the ledger looked like at the moment it was
