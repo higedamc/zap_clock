@@ -49,12 +49,13 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     
     // Initialize GoRouter
     _router = GoRouter(
@@ -109,6 +110,21 @@ class _MyAppState extends ConsumerState<MyApp> {
     final ringController = ref.read(alarmRingControllerProvider);
     ringController.ringStarted.listen(_navigateToRingScreen);
     ringController.bind();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // A zap whose deadline passed while the engine was not running is
+      // settled the next time the app is in front of the user.
+      ref.read(alarmRingControllerProvider).settleOverdue();
+    }
   }
   
   /// Navigate to alarm ring screen

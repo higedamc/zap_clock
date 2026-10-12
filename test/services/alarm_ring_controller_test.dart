@@ -1,16 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zap_clock/models/alarm.dart';
+import 'package:zap_clock/models/zap_obligation.dart';
 import 'package:zap_clock/services/alarm_ring_controller.dart';
 import 'package:zap_clock/services/ring_schedule.dart';
 import 'package:zap_clock/services/storage_service.dart';
 import 'package:zap_clock/services/zap_executor.dart';
+import 'package:zap_clock/services/zap_ledger.dart';
 
 import 'fakes.dart';
 
 /// Lets stream events and the controller's awaited futures settle.
 Future<void> settle() async {
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < 25; i++) {
     await Future<void>.delayed(Duration.zero);
   }
 }
@@ -26,6 +28,9 @@ void main() {
   late FakePayer payer;
   late FakeCountdown countdown;
   late StorageService storage;
+  late ZapLedger ledger;
+  late FakeJournal journal;
+  late DateTime now;
   late AlarmRingController controller;
   late List<RingEnded> ended;
   late List<int> started;
@@ -36,9 +41,17 @@ void main() {
     String? nwcConnection = nwc,
     Object? payError,
     int Function(int, int)? pickSnoozeTimeout,
+    FakePayer? payerOverride,
+    void Function(ZapLedger ledger)? seedLedger,
+    void Function(FakeJournal journal)? seedJournal,
+    List<int> initiallyRinging = const [],
   }) async {
     SharedPreferences.setMockInitialValues({});
-    storage = StorageService(await SharedPreferences.getInstance());
+    final prefs = await SharedPreferences.getInstance();
+    storage = StorageService(prefs);
+    ledger = ZapLedger(prefs);
+    journal = FakeJournal();
+    now = DateTime(2026, 10, 14, 7, 0);
     await storage.saveAlarms(List.of(alarms));
     if (nwcConnection != null) {
       await storage.setGlobalNwcConnection(nwcConnection);
@@ -47,9 +60,19 @@ void main() {
     // global setting as the fallback recipient instead.
     await storage.setDonationRecipient('global@example.com');
 
+    seedLedger?.call(ledger);
+    // The native journal exists before the engine starts; seed it before
+    // bind(), whose first platform event already settles overdue entries.
+    seedJournal?.call(journal);
+
     platform = FakeAlarmPlatform();
+    // Alarms already ringing when the engine starts (Alarm.init seeds the
+    // plugin's ringing set before anyone listens).
+    for (final id in initiallyRinging) {
+      platform.ring(id);
+    }
     scheduler = FakeScheduler();
-    payer = FakePayer(error: payError);
+    payer = payerOverride ?? FakePayer(error: payError);
     countdown = FakeCountdown();
     ended = [];
     started = [];
@@ -60,9 +83,12 @@ void main() {
       storage: storage,
       scheduler: scheduler,
       zap: ZapExecutor(storage: storage, payer: payer),
+      ledger: ledger,
+      journal: journal,
       countdown: countdown,
       onAlarmsChanged: () => alarmsChanged++,
       pickSnoozeTimeout: pickSnoozeTimeout,
+      clock: () => now,
     );
     controller.ringStarted.listen(started.add);
     controller.ringEnded.listen(ended.add);
@@ -442,6 +468,308 @@ void main() {
       expect(scheduler.scheduled, hasLength(scheduledAfterExternalStop));
       expect(stored(1).snoozeCount, 0);
       expect(ended, hasLength(1));
+    });
+  });
+
+  group('ledger', () {
+    Alarm paidAlarm() =>
+        Alarm(id: 1, hour: 7, minute: 0, amountSats: 21, timeoutSeconds: 90);
+
+    test('ring start uses the reserved obligation deadline, not the alarm '
+        'timeout', () async {
+      await build(
+        alarms: [paidAlarm()],
+        seedLedger: (l) => l.reserve(
+          alarm: paidAlarm().copyWith(timeoutSeconds: 90),
+          ringAt: DateTime(2026, 10, 14, 7, 0),
+          resolveRecipient: (_) => 'reserved@example.com',
+          pickSnoozeTimeout: (a, b) => a,
+        ),
+      );
+      // Clock is 07:00, deadline is 07:01:30; the engine came up 20 s late.
+      now = DateTime(2026, 10, 14, 7, 0, 20);
+
+      platform.ring(1);
+      await settle();
+
+      expect(countdown.running[1]?.timeoutSeconds, 70);
+    });
+
+    test('a ring with no reservation gets one at ring time (migration)',
+        () async {
+      await build(alarms: [paidAlarm()]);
+
+      platform.ring(1);
+      await settle();
+
+      final pending = ledger.pending().single;
+      expect(pending.alarmId, 1);
+      expect(pending.ringAt, now);
+      expect(pending.deadline, now.add(const Duration(seconds: 90)));
+      expect(pending.recipient, 'global@example.com');
+      expect(countdown.running[1]?.timeoutSeconds, 90);
+    });
+
+    test('attempted is written before the wallet is called', () async {
+      final peeking = LedgerPeekingPayer(
+        () => ledger.pending().isEmpty
+            ? ledger.all().single.status.name
+            : 'pending',
+      );
+      await build(alarms: [paidAlarm()], payerOverride: peeking);
+      platform.ring(1);
+      await settle();
+
+      await countdown.expire(1);
+      await settle();
+
+      expect(peeking.statusesSeen, ['attempted']);
+      expect(ledger.all().single.status, ZapObligationStatus.paid);
+      expect(ledger.all().single.paymentHash, 'hash-1');
+    });
+
+    test('pays the amount and recipient frozen in the obligation, not the '
+        'edited alarm', () async {
+      await build(
+        alarms: [paidAlarm()],
+        seedLedger: (l) => l.reserve(
+          alarm: paidAlarm().copyWith(amountSats: 5),
+          ringAt: DateTime(2026, 10, 14, 7, 0),
+          resolveRecipient: (_) => 'frozen@example.com',
+          pickSnoozeTimeout: (a, b) => a,
+        ),
+      );
+      platform.ring(1);
+      await settle();
+
+      await countdown.expire(1);
+      await settle();
+
+      expect(payer.payments.single.sats, 5);
+      expect(payer.payments.single.address, 'frozen@example.com');
+    });
+
+    test('a failed payment is recorded as failed and never retried, even if '
+        'the ring fires again', () async {
+      await build(alarms: [paidAlarm()], payError: Exception('offline'));
+      platform.ring(1);
+      await settle();
+      await countdown.expire(1);
+      await settle();
+
+      expect(ledger.all().single.status, ZapObligationStatus.failed);
+      expect(ledger.pending(), isEmpty);
+
+      // The same alarm rings again later (new obligation), the old one must
+      // stay failed and untouched.
+      now = now.add(const Duration(hours: 24));
+      platform.ring(1);
+      await settle();
+      await controller.stop(1);
+      await settle();
+
+      expect(payer.payments, hasLength(1));
+      expect(
+        ledger.all().map((o) => o.status),
+        unorderedEquals([
+          ZapObligationStatus.failed,
+          ZapObligationStatus.cancelled,
+        ]),
+      );
+    });
+
+    test('stop before the deadline cancels the obligation', () async {
+      await build(alarms: [paidAlarm()]);
+      platform.ring(1);
+      await settle();
+
+      await controller.stop(1);
+      await settle();
+
+      expect(ledger.all().single.status, ZapObligationStatus.cancelled);
+      expect(payer.payments, isEmpty);
+    });
+
+    test('external stop before the deadline cancels the obligation',
+        () async {
+      await build(alarms: [paidAlarm()]);
+      platform.ring(1);
+      await settle();
+
+      platform.stopNative(1);
+      await settle();
+
+      expect(ledger.all().single.status, ZapObligationStatus.cancelled);
+    });
+
+    test('engine starting after the deadline while the alarm is still '
+        'ringing pays once and stops', () async {
+      // Deadline 06:51:30, engine comes up at 07:00 with the alarm ringing
+      // and no journal (the service never stopped, so there is no stop entry).
+      await build(
+        alarms: [paidAlarm()],
+        seedLedger: (l) => l.reserve(
+          alarm: paidAlarm(),
+          ringAt: DateTime(2026, 10, 14, 6, 50),
+          resolveRecipient: (_) => 'r@example.com',
+          pickSnoozeTimeout: (a, b) => a,
+        ),
+        initiallyRinging: [1],
+      );
+
+      expect(payer.payments, hasLength(1));
+      expect(platform.stopCalls, [1]);
+      expect(ledger.all().single.status, ZapObligationStatus.paid);
+      expect(ended.single.reason, StopReason.timeout);
+    });
+  });
+
+  group('settleOverdue (engine was dead at the deadline)', () {
+    final ringAt = DateTime(2026, 10, 14, 6, 0);
+    final deadline = ringAt.add(const Duration(seconds: 90));
+    Alarm paidAlarm() =>
+        Alarm(id: 1, hour: 6, minute: 0, amountSats: 21, timeoutSeconds: 90);
+
+    /// Builds with the obligation overdue and the native journal pre-filled,
+    /// as it would be when the app starts after a ring it did not see.
+    /// bind() in build() delivers the initial ringing set, which triggers
+    /// settleOverdue() on its own.
+    Future<void> buildOverdue(void Function(FakeJournal j) seed) => build(
+          alarms: [paidAlarm()],
+          seedLedger: (l) => l.reserve(
+            alarm: paidAlarm(),
+            ringAt: ringAt,
+            resolveRecipient: (_) => 'r@example.com',
+            pickSnoozeTimeout: (a, b) => a,
+          ),
+          seedJournal: seed,
+        );
+
+    test('stopped from the notification after the deadline: pays once, '
+        'settled automatically on start and idempotent afterwards', () async {
+      await buildOverdue((j) {
+        j.start(ringAt);
+        j.stop(deadline.add(const Duration(seconds: 40)));
+      });
+
+      expect(payer.payments, hasLength(1));
+
+      await controller.settleOverdue();
+      await controller.settleOverdue();
+
+      expect(payer.payments, hasLength(1));
+      expect(ledger.all().single.status, ZapObligationStatus.paid);
+      expect(platform.stopCalls, isEmpty);
+    });
+
+    test('stopped from the notification before the deadline: cancelled, '
+        'nothing paid', () async {
+      await buildOverdue((j) {
+        j.start(ringAt);
+        j.stop(ringAt.add(const Duration(seconds: 10)));
+      });
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.all().single.status, ZapObligationStatus.cancelled);
+    });
+
+    test('no journal record: unprovable, nothing paid', () async {
+      await buildOverdue((_) {});
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.all().single.status, ZapObligationStatus.unprovable);
+    });
+
+    test('ring started but never stopped and not ringing now (process '
+        'killed): unprovable', () async {
+      await buildOverdue((j) => j.start(ringAt));
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.all().single.status, ZapObligationStatus.unprovable);
+    });
+
+    test('a throw inside settlement is logged, not propagated, and the next '
+        'call still settles', () async {
+      // bind() in build() already ran one settleOverdue(); make the journal
+      // throw only for the explicit calls below.
+      await build(alarms: [paidAlarm()]);
+      await ledger.reserve(
+        alarm: paidAlarm(),
+        ringAt: ringAt,
+        resolveRecipient: (_) => 'r@example.com',
+        pickSnoozeTimeout: (a, b) => a,
+      );
+      journal.start(ringAt);
+      journal.stop(deadline.add(const Duration(seconds: 40)));
+      now = deadline.add(const Duration(hours: 1));
+
+      journal.readError = StateError('platform channel gone');
+      await expectLater(controller.settleOverdue(), completes);
+      expect(payer.payments, isEmpty);
+      expect(ledger.pending(), hasLength(1), reason: 'undecided, stays pending');
+
+      journal.readError = null;
+      await controller.settleOverdue();
+
+      expect(payer.payments, hasLength(1));
+      expect(ledger.pending(), isEmpty);
+    });
+
+    test('a start after the deadline from an unrelated ring pays nothing',
+        () async {
+      // The reserved 06:00 ring never happened; a different alarm rang at
+      // 09:00 and was stopped normally. Its stop is past the stale deadline
+      // but must not settle this obligation (review blocker on #17).
+      await buildOverdue((j) {
+        j.start(ringAt.add(const Duration(hours: 3)));
+        j.stop(ringAt.add(const Duration(hours: 3, minutes: 1)));
+      });
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.all().single.status, ZapObligationStatus.unprovable);
+    });
+
+    test('a journal that fails to read pays nothing', () async {
+      await buildOverdue((j) {
+        j.start(ringAt);
+        j.stop(deadline.add(const Duration(seconds: 40)));
+      });
+      // Already paid above; now make sure a second, new obligation with a
+      // journal read failure is not paid.
+      await ledger.reserve(
+        alarm: paidAlarm(),
+        ringAt: ringAt.add(const Duration(days: 1)),
+        resolveRecipient: (_) => 'r@example.com',
+        pickSnoozeTimeout: (a, b) => a,
+      );
+      now = ringAt.add(const Duration(days: 1, hours: 1));
+      journal.entries.clear();
+
+      await controller.settleOverdue();
+
+      expect(payer.payments, hasLength(1));
+      expect(ledger.pending(), isEmpty);
+      expect(
+        ledger.all().where((o) => o.status == ZapObligationStatus.unprovable),
+        hasLength(1),
+      );
+    });
+
+    test('a deadline still ahead is left alone', () async {
+      await build(
+        alarms: [paidAlarm()],
+        seedLedger: (l) => l.reserve(
+          alarm: paidAlarm(),
+          ringAt: DateTime(2026, 10, 14, 7, 30),
+          resolveRecipient: (_) => 'r@example.com',
+          pickSnoozeTimeout: (a, b) => a,
+        ),
+      );
+
+      await controller.settleOverdue();
+
+      expect(payer.payments, isEmpty);
+      expect(ledger.pending(), hasLength(1));
     });
   });
 

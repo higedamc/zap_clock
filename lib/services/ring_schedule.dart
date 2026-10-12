@@ -1,4 +1,13 @@
+import 'dart:math';
+
 import '../models/alarm.dart';
+
+/// Draws the second snooze ring's timeout from the alarm's range, inclusive.
+/// Not security relevant, so a plain Random is fine.
+int defaultSnoozeTimeoutPicker(int minSeconds, int maxSeconds) {
+  if (maxSeconds <= minSeconds) return minSeconds;
+  return minSeconds + Random().nextInt(maxSeconds - minSeconds + 1);
+}
 
 /// Pure scheduling rule shared by [AlarmService] and the unit tests.
 ///

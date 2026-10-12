@@ -69,20 +69,21 @@ class ZapExecutor {
         DonationRecipients.defaultRecipientSync.lightningAddress;
   }
 
-  Future<ZapOutcome> execute(Alarm alarm) async {
-    final amountSats = alarm.amountSats;
-    if (amountSats == null) {
-      return const ZapOutcome.skipped('alarm has no payment configured');
-    }
-
+  /// Sends one payment of [amountSats] to [recipient]. Both come from the
+  /// obligation that was reserved when the ring was scheduled, so a later
+  /// edit of the alarm cannot change what an already-ringing alarm pays.
+  Future<ZapOutcome> execute({
+    required int amountSats,
+    required String recipient,
+    String label = '',
+  }) async {
     final connection = _storage.getGlobalNwcConnection();
     if (connection == null || connection.isEmpty) {
-      debugPrint('⚠️ alarm ${alarm.id}: no NWC connection configured, skipping zap');
+      debugPrint('⚠️ $label: no NWC connection configured, skipping zap');
       return const ZapOutcome.skipped('no NWC connection configured');
     }
 
-    final recipient = resolveRecipient(alarm);
-    debugPrint('💳 alarm ${alarm.id}: auto zap $amountSats sats → $recipient');
+    debugPrint('💳 $label: auto zap $amountSats sats → $recipient');
 
     try {
       final paymentHash = await _payer.pay(
@@ -91,10 +92,10 @@ class ZapExecutor {
         amountSats: amountSats,
         comment: comment,
       );
-      debugPrint('✅ alarm ${alarm.id}: zap paid ($paymentHash)');
+      debugPrint('✅ $label: zap paid ($paymentHash)');
       return ZapOutcome.paid(paymentHash);
     } catch (e) {
-      debugPrint('❌ alarm ${alarm.id}: zap failed: $e');
+      debugPrint('❌ $label: zap failed: $e');
       return ZapOutcome.failed(e);
     }
   }
