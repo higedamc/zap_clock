@@ -9,7 +9,10 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
+import com.gdelataillade.alarm.alarm.AlarmService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +23,7 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.zapclock.zap_clock/ringtone"
     private val PERMISSION_CHANNEL = "com.zapclock.zap_clock/permission"
     private val LOCK_SCREEN_CHANNEL = "com.zapclock.zap_clock/lockscreen"
+    private val ALARM_NATIVE_CHANNEL = "com.zapclock.zap_clock/alarm_native"
     private val RINGTONE_PICKER_REQUEST = 100
     private var pendingResult: MethodChannel.Result? = null
     
@@ -123,6 +127,63 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
+        }
+
+        // Native stop backstop. Dart calls Alarm.stop(id) first; this runs after
+        // it and does not depend on what the plugin believes is ringing.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ALARM_NATIVE_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "stopRingingBackstop" -> {
+                    result.success(stopRingingBackstop())
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    /**
+     * Stops the alarm plugin's foreground service and the vibrator directly.
+     *
+     * AlarmApiImpl.stopAlarm only stops AlarmService when the id is in
+     * AlarmService.ringingAlarmIds, which is the list of ids with a *playing*
+     * MediaPlayer (AlarmService.kt:175, AudioService.kt:36). If audio failed to
+     * start, vibration still starts (AlarmService.kt:177) but no Dart stop call
+     * can reach the service, so it keeps vibrating (issue #11). Stopping the
+     * service runs AlarmService.onDestroy, which cancels the vibrator and
+     * publishes AlarmRingingLiveData(false); cancelling the vibrator here as
+     * well covers the case where the service is already gone but the effect is
+     * still playing.
+     *
+     * Safe because allowAlarmOverlap is false: at most one alarm rings at a time,
+     * so stopping the whole service never silences another alarm.
+     *
+     * Returns true when the service was alive and has been asked to stop.
+     */
+    private fun stopRingingBackstop(): Boolean {
+        val serviceAlive = AlarmService.instance != null
+        var stopped = false
+        if (serviceAlive) {
+            stopped = stopService(Intent(this, AlarmService::class.java))
+        }
+        cancelVibration()
+        android.util.Log.d("ZapClock", "stopRingingBackstop: serviceAlive=$serviceAlive stopped=$stopped")
+        return stopped
+    }
+
+    private fun cancelVibration() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val manager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                manager.cancel()
+            } else {
+                @Suppress("DEPRECATION")
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator.cancel()
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("ZapClock", "cancelVibration failed", e)
         }
     }
 

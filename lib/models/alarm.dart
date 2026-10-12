@@ -154,8 +154,8 @@ class Alarm {
   }
   
   /// Get next alarm trigger time
-  DateTime getNextAlarmTime() {
-    final now = DateTime.now();
+  DateTime getNextAlarmTime({DateTime? now}) {
+    now ??= DateTime.now();
     var next = DateTime(now.year, now.month, now.day, hour, minute);
     
     // If no repeat is set

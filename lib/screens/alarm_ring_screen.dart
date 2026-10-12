@@ -3,29 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:alarm/alarm.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm.dart' as app_models;
-import '../providers/alarm_provider.dart';
-import '../providers/nwc_provider.dart';
+import '../providers/alarm_ring_controller_provider.dart';
 import '../providers/storage_provider.dart';
-import '../services/alarm_countdown_service.dart';
+import '../services/alarm_ring_controller.dart';
 import '../services/lock_screen_service.dart';
 import '../app_theme.dart';
 
-/// Alarm ringing screen
-/// Lightning payment functionality planned for future
-/// Currently can stop alarm with temporary button
-class AlarmRingScreen extends StatefulWidget {
+/// Alarm ringing screen.
+///
+/// Pure view over [AlarmRingController]: it shows the countdown and forwards
+/// Stop / Snooze. It never stops the alarm or moves money itself, and it
+/// leaves when the controller reports that the ring ended, whatever ended it.
+class AlarmRingScreen extends ConsumerStatefulWidget {
   final int alarmId;
   
   const AlarmRingScreen({super.key, required this.alarmId});
 
   @override
-  State<AlarmRingScreen> createState() => _AlarmRingScreenState();
+  ConsumerState<AlarmRingScreen> createState() => _AlarmRingScreenState();
 }
 
-class _AlarmRingScreenState extends State<AlarmRingScreen>
+class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -34,12 +34,24 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   String? _paymentError;
   Timer? _updateTimer;
   int _remainingSeconds = 0; // 初期値は0、アラーム読み込み時に設定
-  final _countdownService = AlarmCountdownService();
-  int? _randomSnoozeTimeout; // 2回目のアラームのランダム秒数
+  StreamSubscription<RingEnded>? _endedSubscription;
+  bool _leaving = false;
+  
+  AlarmRingController get _controller => ref.read(alarmRingControllerProvider);
   
   @override
   void initState() {
     super.initState();
+    
+    // Leave as soon as the controller reports the ring ended, whether it was
+    // the Stop button, Snooze, the zap timeout or the notification's Stop.
+    _endedSubscription = _controller.ringEnded.listen(_onRingEnded);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_controller.ringingIds.contains(widget.alarmId)) {
+        debugPrint('🔕 alarm ${widget.alarmId}: already ended, leaving ring screen');
+        _leave();
+      }
+    });
     
     // 全画面表示にする
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -62,6 +74,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
   void dispose() {
     _animationController.dispose();
     _updateTimer?.cancel();
+    _endedSubscription?.cancel();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,
@@ -69,109 +82,53 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     super.dispose();
   }
   
-  /// バックグラウンドカウントダウンと同期
-  void _syncWithBackgroundCountdown(WidgetRef ref) async {
-    // 送金設定がない場合はカウントダウン不要
+  /// Mirrors the controller's countdown on screen once a second. The zap
+  /// itself fires in the controller, independent of this widget.
+  void _startCountdownDisplay() async {
     if (_alarm?.amountSats == null) {
-      debugPrint('⏱️ 送金設定なし、カウントダウン同期をスキップ');
       return;
     }
     
     // スヌーズモードの1回目のアラーム：カウントダウン不要
     final isSnoozeMode = _alarm?.enableSnooze ?? false;
     final isFirstAlarm = (_alarm?.snoozeCount ?? 0) == 0;
-    
     if (isSnoozeMode && isFirstAlarm) {
-      debugPrint('😴 スヌーズモード1回目: カウントダウンなし（スヌーズボタンを待つだけ）');
       return;
     }
     
-    // スヌーズモードの2回目のアラームの場合、ランダムなタイムアウトを生成
-    if (_alarm!.enableSnooze && _alarm!.snoozeCount == 1) {
-      final range = _alarm!.snoozeTimeoutRange;
-      final random = DateTime.now().millisecond % (range.$2 - range.$1 + 1);
-      _randomSnoozeTimeout = range.$1 + random;
-      debugPrint('🎲 スヌーズ2回目: ランダムタイムアウト = ${_randomSnoozeTimeout}秒');
-      
-      if (!mounted) return;
+    final remaining = await _controller.remainingSeconds(widget.alarmId);
+    if (!mounted) return;
+    if (remaining != null) {
       setState(() {
-        _remainingSeconds = _randomSnoozeTimeout!;
+        _remainingSeconds = remaining;
       });
-      
-      // 簡易的なカウントダウン（バックグラウンドサービス使わない）
-      _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (!mounted) {
-          timer.cancel();
-          return;
-        }
-        
-        setState(() {
-          _remainingSeconds--;
-        });
-        
-        if (_remainingSeconds <= 0) {
-          timer.cancel();
-          debugPrint('⏰ スヌーズタイムアウト！自動Zap実行');
-          _executeAutoZap(ref);
-        }
-      });
-      
-      return;
     }
     
-    debugPrint('⏱️ バックグラウンドカウントダウンとの同期を開始...');
-    
-    // バックグラウンドで既に開始されているカウントダウンから残り時間を取得
-    final remainingSeconds = await _countdownService.getRemainingSeconds(widget.alarmId);
-    
-    if (remainingSeconds == null) {
-      debugPrint('⚠️ バックグラウンドカウントダウンが見つかりません（まだ開始されていない可能性）');
-      // フォールバック: 設定されたタイムアウト時間を使用
-      if (!mounted) return;
-      setState(() {
-        _remainingSeconds = _alarm!.timeoutSeconds ?? 300;
-      });
-      debugPrint('⏱️ フォールバック: タイムアウト設定値を使用 (${_remainingSeconds}秒)');
-    } else {
-      if (!mounted) return;
-      setState(() {
-        _remainingSeconds = remainingSeconds;
-      });
-      debugPrint('✅ バックグラウンドカウントダウンと同期完了: 残り${_remainingSeconds}秒');
-    }
-    
-    // 1秒ごとに残り時間を更新
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (!mounted) {
         timer.cancel();
         return;
       }
       
-      // バックグラウンドの残り時間を取得
-      final remaining = await _countdownService.getRemainingSeconds(widget.alarmId);
+      final remaining = await _controller.remainingSeconds(widget.alarmId);
+      if (!mounted) return;
       
       if (remaining == null || remaining <= 0) {
         timer.cancel();
-        if (mounted) {
-          setState(() {
-            _remainingSeconds = 0;
-          });
-        }
-        debugPrint('⏰ カウントダウン完了または停止');
+        setState(() {
+          _remainingSeconds = 0;
+          // The controller is paying now; disable the buttons until it reports.
+          _isProcessingPayment = true;
+        });
         return;
       }
       
-      if (mounted) {
-        setState(() {
-          _remainingSeconds = remaining;
-        });
-      }
+      setState(() {
+        _remainingSeconds = remaining;
+      });
     });
-    
-    debugPrint('⏱️ 定期更新タイマーを開始しました');
   }
   
-
   @override
   Widget build(BuildContext context) {
     // スヌーズモードの1回目は黄色、それ以外は赤色
@@ -197,10 +154,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
                   _remainingSeconds = _alarm!.timeoutSeconds ?? 300;
                 }
                 
-                // バックグラウンドカウントダウンと同期（初回のみ）
+                // Start mirroring the countdown (once).
                 if (_updateTimer == null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _syncWithBackgroundCountdown(ref);
+                    _startCountdownDisplay();
                   });
                 }
               } catch (e) {
@@ -569,7 +526,7 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         child: ElevatedButton(
           onPressed: _isProcessingPayment
               ? null
-              : () => _handleSnooze(context, ref),
+              : () => _controller.snooze(widget.alarmId),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.amber,
             foregroundColor: Colors.white,
@@ -609,12 +566,9 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
         onPressed: _isProcessingPayment
             ? null
             : () {
-                // バックグラウンドカウントダウンをキャンセル
-                _countdownService.stopCountdown(widget.alarmId);
                 _updateTimer?.cancel();
-                
-                // アラームを停止（送金なし）
-                _stopAlarmAndCloseScreen(context, ref);
+                // Stop without paying. Every stop path lives in the controller.
+                _controller.stop(widget.alarmId);
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
@@ -647,125 +601,34 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     );
   }
   
-  /// スヌーズボタンを押した時の処理
-  Future<void> _handleSnooze(BuildContext context, WidgetRef ref) async {
-    debugPrint('😴 スヌーズボタンが押されました');
-    
-    // バックグラウンドカウントダウンを停止（1回目は基本的に動いてないが念のため）
-    _countdownService.stopCountdown(widget.alarmId);
+  /// The controller finished tearing down a ring.
+  void _onRingEnded(RingEnded event) {
+    if (event.alarmId != widget.alarmId) return;
+    final zap = event.zap;
+    if (zap != null && zap.attempted && !zap.paid && mounted) {
+      setState(() {
+        _paymentError = 'Payment failed: ${zap.error}';
+      });
+    }
+    _leave();
+  }
+  
+  /// Single exit path. If the device is still locked the task is hidden so
+  /// the user lands on the lock screen; the route is reset to '/' either way
+  /// so the next foreground does not show a stale ring screen.
+  Future<void> _leave() async {
+    if (_leaving) return;
+    _leaving = true;
     _updateTimer?.cancel();
     
-    // アラームを停止
-    await Alarm.stop(widget.alarmId);
-    
-    // スヌーズカウントをインクリメント
-    final updatedAlarm = _alarm!.copyWith(snoozeCount: 1);
-    await ref.read(alarmListProvider.notifier).updateAlarm(updatedAlarm);
-    
-    // 指定時間後に2回目のアラームをスケジュール
-    final alarmService = ref.read(alarmServiceProvider);
-    await alarmService.scheduleAlarm(updatedAlarm);
-    
-    final timeout = _alarm!.timeoutSeconds!;
-    final timeStr = timeout >= 60 ? '${(timeout / 60).round()}分' : '${timeout}秒';
-    debugPrint('✅ スヌーズ完了、${timeStr}後に2回目のアラームをスケジュールしました');
-    
-    // Leave the ring screen. If the device is still locked the task is hidden
-    // so the user lands on the lock screen; the route is reset to '/' either
-    // way so the next foreground does not show a stale ring screen.
     await LockScreenService.leaveRingScreen();
-    if (context.mounted) {
-      context.go('/');
-    }
-  }
-  
-  /// 自動Zap実行
-  Future<void> _executeAutoZap(WidgetRef ref) async {
-    if (_isProcessingPayment) return;
-    
-    setState(() {
-      _isProcessingPayment = true;
-      _paymentError = null;
-    });
-    
-    try {
-      final storage = ref.read(storageServiceProvider);
-      final nwcConnection = storage.getGlobalNwcConnection();
-      
-      if (nwcConnection == null || nwcConnection.isEmpty) {
-        debugPrint('⚠️ NWC接続が設定されていません');
-        await _stopAlarmAndCloseScreen(context, ref);
-        return;
-      }
-      
-      final recipientAddress = _alarm!.donationRecipient 
-          ?? storage.getDonationRecipient() 
-          ?? 'hi@getalby.com'; // fallback
-      
-      debugPrint('💳 自動Zap実行: ${_alarm!.amountSats} sats → $recipientAddress');
-      
-      final nwcService = ref.read(nwcServiceProvider);
-      await nwcService.payWithNwc(
-        connectionString: nwcConnection,
-        lightningAddress: recipientAddress,
-        amountSats: _alarm!.amountSats!,
-        comment: 'donation from ZapClock',
-      );
-      
-      debugPrint('✅ 自動Zap成功');
-      
-      await _stopAlarmAndCloseScreen(context, ref);
-      
-    } catch (e) {
-      debugPrint('❌ 自動Zap失敗: $e');
-      
-      if (mounted) {
-        setState(() {
-          _isProcessingPayment = false;
-          _paymentError = 'Payment failed: $e';
-        });
-      }
-      
-      // エラーでもアラームは停止
-      await _stopAlarmAndCloseScreen(context, ref);
-    }
-  }
-  
-  /// アラームを実際に停止して画面を閉じる
-  Future<void> _stopAlarmAndCloseScreen(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    debugPrint('🛑 _stopAlarmAndCloseScreen開始');
-    
-    // バックグラウンドカウントダウンを停止
-    _countdownService.stopCountdown(widget.alarmId);
-    
-    // アラームを停止
-    debugPrint('🔕 Alarm.stopを呼び出します: ID=${widget.alarmId}');
-    await Alarm.stop(widget.alarmId);
-    debugPrint('✅ Alarm.stop完了');
-    
-    // 繰り返しアラームの場合、次回のスケジュールを設定
-    if (_alarm != null && _alarm!.hasRepeat) {
-      debugPrint('🔄 繰り返しアラーム：次回をスケジュール');
-      final alarmService = ref.read(alarmServiceProvider);
-      await alarmService.scheduleAlarm(_alarm!);
-      debugPrint('✅ 次回のスケジュール完了');
-    }
-    
-    // Leave the ring screen. If the device is still locked the task is hidden
-    // so the user lands on the lock screen; the route is reset to '/' either
-    // way so the next foreground does not show a stale ring screen.
-    await LockScreenService.leaveRingScreen();
-    if (!context.mounted) {
-      debugPrint('⚠️ context.mountedがfalseのため画面を閉じられません');
+    if (!mounted) {
+      debugPrint('⚠️ ring screen unmounted before navigating away');
       return;
     }
     
-    debugPrint('🚪 画面を閉じます');
+    debugPrint('🚪 leaving ring screen');
     context.go('/');
-    debugPrint('✅ _stopAlarmAndCloseScreen完了');
   }
   
   /// タイムアウト時間を表示用メッセージに変換
