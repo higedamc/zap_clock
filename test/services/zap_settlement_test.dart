@@ -138,14 +138,92 @@ void main() {
     );
   });
 
-  test('a late start inside the window is still this ring', () {
-    // Started a few seconds before the deadline, stopped after it: paid.
+  test('a start within scheduling precision of ringAt is this ring', () {
     expect(
       decide(journal: [
-        start(deadline.subtract(const Duration(seconds: 5))),
+        start(ringAt.add(const Duration(seconds: 20))),
         stop(later),
       ]),
       SettlementDecision.pay,
+    );
+  });
+
+  test('a start more than two minutes late is another alarm, even inside '
+      'the timeout', () {
+    // Timeout 5 min. The user set a backup alarm 3 min after the first; the
+    // first never fired. The backup's stop is after the first deadline, but
+    // the backup must not pay for the first.
+    final fiveMinute = ZapObligation(
+      alarmId: 1,
+      ringAt: ringAt,
+      deadline: ringAt.add(const Duration(minutes: 5)),
+      amountSats: 21,
+      recipient: 'r@example.com',
+    );
+    expect(
+      decide(
+        obligation: fiveMinute,
+        now: ringAt.add(const Duration(hours: 1)),
+        journal: [
+          start(ringAt.add(const Duration(minutes: 3))),
+          stop(ringAt.add(const Duration(minutes: 6))),
+        ],
+      ),
+      SettlementDecision.unprovable,
+    );
+  });
+
+  test('a start exactly two minutes late is outside the window', () {
+    final fiveMinute = ZapObligation(
+      alarmId: 1,
+      ringAt: ringAt,
+      deadline: ringAt.add(const Duration(minutes: 5)),
+      amountSats: 21,
+      recipient: 'r@example.com',
+    );
+    expect(
+      decide(
+        obligation: fiveMinute,
+        now: ringAt.add(const Duration(hours: 1)),
+        journal: [
+          start(ringAt.add(const Duration(minutes: 2))),
+          stop(ringAt.add(const Duration(minutes: 6))),
+        ],
+      ),
+      SettlementDecision.unprovable,
+    );
+  });
+
+  test('a start just under two minutes late is still this ring', () {
+    final fiveMinute = ZapObligation(
+      alarmId: 1,
+      ringAt: ringAt,
+      deadline: ringAt.add(const Duration(minutes: 5)),
+      amountSats: 21,
+      recipient: 'r@example.com',
+    );
+    expect(
+      decide(
+        obligation: fiveMinute,
+        now: ringAt.add(const Duration(hours: 1)),
+        journal: [
+          start(ringAt.add(const Duration(minutes: 1, seconds: 59))),
+          stop(ringAt.add(const Duration(minutes: 6))),
+        ],
+      ),
+      SettlementDecision.pay,
+    );
+  });
+
+  test('a short timeout caps the window at the deadline', () {
+    // deadline = ringAt + 90 s < ringAt + 2 min: a start at 100 s is after
+    // the deadline and cannot have rung through it.
+    expect(
+      decide(journal: [
+        start(ringAt.add(const Duration(seconds: 100))),
+        stop(later),
+      ]),
+      SettlementDecision.unprovable,
     );
   });
 
