@@ -44,7 +44,13 @@ class AlarmService {
         icon: 'notification_icon',
       ),
       warningNotificationOnKill: true,
-      androidFullScreenIntent: true, // Full screen display
+      // Lock-screen bypass depends on this flag. The alarm plugin only publishes
+      // AlarmRingingLiveData(true) when androidFullScreenIntent is set
+      // (alarm 5.4.1 AlarmService.kt:125-127), and that LiveData is what sets
+      // showWhenLocked/turnScreenOn for the ringing window. The manifest no longer
+      // carries those flags, so turning this off silently stops alarms from
+      // showing over the lock screen (issues #8, #12).
+      androidFullScreenIntent: true,
     );
     
     await Alarm.set(alarmSettings: alarmSettings);

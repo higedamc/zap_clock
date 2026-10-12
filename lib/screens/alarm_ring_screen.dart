@@ -10,6 +10,7 @@ import '../providers/alarm_provider.dart';
 import '../providers/nwc_provider.dart';
 import '../providers/storage_provider.dart';
 import '../services/alarm_countdown_service.dart';
+import '../services/lock_screen_service.dart';
 import '../app_theme.dart';
 
 /// Alarm ringing screen
@@ -669,7 +670,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
     final timeStr = timeout >= 60 ? '${(timeout / 60).round()}分' : '${timeout}秒';
     debugPrint('✅ スヌーズ完了、${timeStr}後に2回目のアラームをスケジュールしました');
     
-    // 画面を閉じる
+    // Leave the ring screen. If the device is still locked the task is hidden
+    // so the user lands on the lock screen; the route is reset to '/' either
+    // way so the next foreground does not show a stale ring screen.
+    await LockScreenService.leaveRingScreen();
     if (context.mounted) {
       context.go('/');
     }
@@ -750,7 +754,10 @@ class _AlarmRingScreenState extends State<AlarmRingScreen>
       debugPrint('✅ 次回のスケジュール完了');
     }
     
-    // 画面を閉じる
+    // Leave the ring screen. If the device is still locked the task is hidden
+    // so the user lands on the lock screen; the route is reset to '/' either
+    // way so the next foreground does not show a stale ring screen.
+    await LockScreenService.leaveRingScreen();
     if (!context.mounted) {
       debugPrint('⚠️ context.mountedがfalseのため画面を閉じられません');
       return;
